@@ -126,10 +126,16 @@ scripts/AMS_butane/plots
 The notebooks are exploratory and assume the package is importable either via
 an editable install or `PYTHONPATH=src`.
 
+Available notebooks:
+
+- `notebooks/simple_ams_reweighting_1d.ipynb`: pedagogical AMS and Girsanov
+  reweighting example on a one-dimensional double well.
+- `notebooks/muller_brown.ipynb`: Muller-Brown exploratory notebook.
+
 Example:
 
 ```bash
-PYTHONPATH=src jupyter lab notebooks/muller_brown.ipynb
+PYTHONPATH=src jupyter lab notebooks/simple_ams_reweighting_1d.ipynb
 ```
 
 ## Notes For Publication
@@ -141,4 +147,3 @@ PYTHONPATH=src jupyter lab notebooks/muller_brown.ipynb
 - The repository keeps the scripts and compact data needed to document how the
   published results were produced. Large raw trajectories should be archived
   separately if they are required for full reproducibility.
-

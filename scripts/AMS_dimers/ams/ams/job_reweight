@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 8
+#SBATCH -J python
+#SBATCH -o log_files/out%J
+#SBATCH -e log_files/err%J
+#SBATCH -p standard
+#SBATCH -t 24:00:00
+#SBATCH --wckey xca06001
+
+module purge
+module use /soft/irsrvsoft1/expl/eb/orion/9/modules/all/Core
+module purge 
+module load intel/2025.0 HDF5/1.14.6
+source /home/irsrvhome1/R11/moracchl/girsams/bin/activate
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH://home/issrvshare1/R06/xbz-fermi/tpigeon/mace/lib
+python run_reweight.py

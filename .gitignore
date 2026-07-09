@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+**/__pycache__/
+# *.py[cod]
+.ipynb_checkpoints/
+data/
+build/
+*.egg-info/
+*.traj
+*.npy
+*.npz
+*out*
+*err*
+*.tar.gz

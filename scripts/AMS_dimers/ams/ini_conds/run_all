@@ -1,0 +1,23 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 16
+#SBATCH -J vasp
+#SBATCH -o log/out%J
+#SBATCH -e log/err%J
+#SBATCH -p standard
+#SBATCH -t 24:00:00
+#SBATCH --wckey xca06001
+# Parcourt tous les dossiers commençant par FV_replica_
+for dir in FV_replica_*/ ; do
+    if [ -d "$dir" ]; then
+        echo "Accès au dossier : $dir"
+        
+        # Entre dans le dossier, lance sbatch, et revient au parent
+        (cd "$dir" && sbatch job)
+        
+        # Optionnel : petit délai pour ne pas saturer le scheduler Slurm
+        sleep 0.5
+    fi
+done
+
+echo "Toutes les soumissions sont terminées."

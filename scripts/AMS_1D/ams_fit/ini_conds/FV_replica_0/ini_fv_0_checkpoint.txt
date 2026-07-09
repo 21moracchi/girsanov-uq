@@ -1,0 +1,25 @@
+{
+    "run_dir": "../FV_replica_",
+    "ini_cond_dir": "../ini_conds/0",
+    "nsteps": 1,
+    "n_walkers": 10,
+    "w_i": 0,
+    "trajfile": "../FV_replica_0/md_traj_0.traj",
+    "cv_interval": 1,
+    "first_in_r": true,
+    "last_r_visited": null,
+    "going_to_sigma": true,
+    "going_back_to_r": false,
+    "t_sigma_r": [
+        []
+    ],
+    "t_r_sigma": [
+        []
+    ],
+    "t_sigma_out": [
+        []
+    ],
+    "t_r_sigma_out": [
+        []
+    ]
+}

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#MSUB -r reweight
+#MSUB -o logs/%I
+#MSUB -e logs/%I
+#MSUB -q a100
+#MSUB -Q normal
+#MSUB -N 1
+#MSUB -n 1
+#MSUB -c 32
+#MSUB -T 86400
+#MSUB -m work,scratch
+
+# source $SCRATCH/girsams_env/bin/activate
+
+python reweight.py

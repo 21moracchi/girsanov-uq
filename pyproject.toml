@@ -12,6 +12,7 @@ dependencies = [
     "aseams @ git+https://github.com/thomaspigeon/aseams.git",
     "scikit-learn",
     "mace-torch",
+    "popsregression",
 ]
 
 [tool.setuptools]

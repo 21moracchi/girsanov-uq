@@ -162,9 +162,10 @@ class OneDimensionalPotentialCalculator(Calculator):
 	"""ASE calculator for a 1D potential defined through descriptors.
 
 	The first atom x-coordinate is used as the scalar coordinate ``x``.
-	Potential models are expected to provide:
+	Potential models are expected to provide either:
 	- ``theta_vec``
 	- ``get_descriptors(x_1d) -> (D, J_D)``
+	or direct ``energy(x)`` and ``derivative(x)``/``force(x)`` methods.
 	"""
 
 	implemented_properties = [
@@ -193,12 +194,19 @@ class OneDimensionalPotentialCalculator(Calculator):
 			raise IndexError("atom_index is out of bounds for the atoms object")
 
 		x = float(self.atoms.positions[self.atom_index, 0])
-		D, J_D = self.potential_1d.get_descriptors(np.array([x]))
-		theta = np.asarray(self.potential_1d.theta_vec, dtype=float)
-
-		energy = float(np.dot(theta, D))
-
-		dVdx = float(np.dot(theta, J_D[:, 0]))
+		if hasattr(self.potential_1d, "get_descriptors"):
+			D, J_D = self.potential_1d.get_descriptors(np.array([x]))
+			theta = np.asarray(self.potential_1d.theta_vec, dtype=float)
+			energy = float(np.dot(theta, D))
+			dVdx = float(np.dot(theta, J_D[:, 0]))
+		else:
+			energy = float(np.asarray(self.potential_1d.energy(x), dtype=float).reshape(-1)[0])
+			if hasattr(self.potential_1d, "derivative"):
+				dVdx = float(np.asarray(self.potential_1d.derivative(x), dtype=float).reshape(-1)[0])
+			else:
+				dVdx = -float(np.asarray(self.potential_1d.force(x), dtype=float).reshape(-1)[0])
+			D = np.array([energy], dtype=float)
+			J_D = np.array([[dVdx]], dtype=float)
 		forces = np.zeros((n_atoms, 3), dtype=float)
 		forces[self.atom_index, 0] = -dVdx
 
@@ -228,3 +236,7 @@ class OneDimensionalPotentialCalculator(Calculator):
 	def get_descriptors_jacobian(self, atoms):
 		self.calculate(atoms, properties=["descriptors", "grad_descriptors"], system_changes="all")
 		return self.results["grad_descriptors"]
+
+	def get_descriptors(self, atoms):
+		self.calculate(atoms, properties=["descriptors"], system_changes="all")
+		return self.results["descriptors"]

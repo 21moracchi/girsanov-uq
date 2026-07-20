@@ -1,15 +1,5 @@
 #!/bin/bash
 
-#MSUB -r submission_loop
-#MSUB -o logs/out_%I
-#MSUB -e logs/err_%I
-#MSUB -q milan
-#MSUB -Q normal
-#MSUB -N 1
-#MSUB -n 1
-#MSUB -c 1
-#MSUB -T 3600
-#MSUB -m scratch,work
 
 # On s'assure que le dossier log existe
 mkdir -p logs
@@ -29,4 +19,3 @@ for dir in results/ams_* ; do
 done
 
 echo "Toutes les soumissions sont terminées."
-

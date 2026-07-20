@@ -1,18 +1,7 @@
 #!/bin/sh
 
-#MSUB -r iBuOH2_ams
-#MSUB -o logs/out%I
-#MSUB -e logs/err%I
-#MSUB -q a100  #partition, see "machine.info" comand 
-#MSUB -Q normal   #QOS see "machine.info" comand        
-#MSUB -N 1 # number of nodes 
-#MSUB -n 1
-#MSUB -c 32       # number of cpu per tasks 
-#MSUB -T 86400    # time limit 
-#MSUB -m work,scratch  # accessible partitions
 
 ## python env 
 # source $SCRATCH/girsams_env/bin/activate
 
 python build_design_matrix.py
-

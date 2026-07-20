@@ -1,12 +1,4 @@
 #!/bin/bash
-#SBATCH -N 1
-#SBATCH -n 16
-#SBATCH -J vasp
-#SBATCH -o log/out%J
-#SBATCH -e log/err%J
-#SBATCH -p standard
-#SBATCH -t 24:00:00
-#SBATCH --wckey xca06001
 # Parcourt tous les dossiers commençant par FV_replica_
 for dir in FV_replica_*/ ; do
     if [ -d "$dir" ]; then

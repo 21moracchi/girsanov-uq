@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python run_ini_conds.py

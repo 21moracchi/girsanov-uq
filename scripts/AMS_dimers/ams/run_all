@@ -1,14 +1,5 @@
 #!/bin/bash
-#SBATCH -N 1
-#SBATCH -n 16
-#SBATCH -J vasp
-#SBATCH -o log/out%J
-#SBATCH -e log/err%J
-#SBATCH -p standard
-#SBATCH -t 24:00:00
-#SBATCH --wckey xca06001
 
 set -euo pipefail
-source /home/irsrvhome1/R11/moracchl/girsams/bin/activate
 
 python run_pipeline.py "$@"

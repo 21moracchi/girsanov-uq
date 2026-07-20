@@ -1,12 +1,4 @@
 #!/bin/bash
-#SBATCH -N 1
-#SBATCH -n 8
-#SBATCH -J python
-#SBATCH -o log_files/out%J
-#SBATCH -e log_files/err%J
-#SBATCH -p standard
-#SBATCH -t 24:00:00
-#SBATCH --wckey xca06001
 
 for i in {0..20}; do
     cd ams_$i

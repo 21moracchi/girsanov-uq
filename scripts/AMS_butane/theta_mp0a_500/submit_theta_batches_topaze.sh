@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-# Submit from scripts/AMS_butane_3/theta_mp0a_500 on Topaze.
+# Submit from scripts/AMS_butane/theta_mp0a_500 on Topaze.
 # Usage:
 #   ccc_msub submit_theta_batches_topaze.sh
 #   THETA_RANGE=5-10 ccc_msub submit_theta_batches_topaze.sh

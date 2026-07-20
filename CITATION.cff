@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it with the metadata below."
+title: "girsanov-uq"
+abstract: "Code and experiment pipelines for uncertainty quantification in rare-event simulations with AMS and Girsanov reweighting."
+authors:
+  - name: "moracchl"
+version: "0.1.0"
+repository-code: "https://github.com/21moracchi/girsanov-uq"
+license: "NOASSERTION"

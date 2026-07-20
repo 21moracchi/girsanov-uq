@@ -99,13 +99,13 @@ def compute_derivative_check(scores, fims, probs, delta_theta, alpha_range=0.1, 
                     p_exact - p_ci, 
                     p_exact + p_ci, 
                     alpha=0.15, color='darkblue')
-    # Ligne pointillée plus fine au premier plan
+    # Thinner dotted line in the foreground
     ax.plot(x_values, p_exact, label='Full Girsanov estimator', color='darkblue', linestyle='solid', lw=2.5)
     ax.fill_between(x_values,
                     p_loglinear - p_loglinear_ci,
                     p_loglinear + p_loglinear_ci,
                     color='orange', alpha=0.15)
-    # Ligne continue plus épaisse en arrière-plan
+    # Thicker solid line in the background
     ax.plot(x_values, p_loglinear, label='Cumulant estimator', color='orange', linestyle='--', lw=1.5)
 
 
@@ -447,7 +447,7 @@ def compute_probability_pdf(scores, model_probs, thetas_sample, fims=None, ref_p
     #
     #     A_hat = -log10(p)
     #
-    # Si f_p(p) est la densité de p, alors :
+    # If f_p(p) is the density of p, then:
     #
     #     f_A(A) = f_p(10**(-A)) * ln(10) * 10**(-A)
     #
@@ -466,7 +466,7 @@ def compute_probability_pdf(scores, model_probs, thetas_sample, fims=None, ref_p
         else:
             pdf_ref_plot = None
 
-        # On inverse pour avoir A_hat croissant de gauche à droite
+        # Reverse so A_hat increases from left to right
         x_plot = x_plot[::-1]
         pdf_vals_plot = pdf_vals_plot[::-1]
         pdf_model_plot = pdf_model_plot[::-1]

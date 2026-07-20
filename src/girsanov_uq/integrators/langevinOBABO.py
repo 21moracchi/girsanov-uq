@@ -139,16 +139,16 @@ class LangevinOBABO(MolecularDynamics):
         if forces is None:
             forces = self.atoms.get_forces(md=True)
 
-            # --- Étape O (Demi-pas de friction/bruit) ---
+            # --- O step (half friction/noise step) ---
             xi = self.rng.standard_normal(size=(len(self.atoms), 3))
             self.comm.broadcast(xi, 0)
             p = self.atoms.get_momenta()
             p = (1 / self.c1) * (self.c2 * p + self.c3 * xi)
 
-            # --- Étape B (Demi-kick de force) ---
+            # --- B step (half force kick) ---
             p = p + (self.dt / 2) * forces
 
-            # --- Étape A (Drift : Mise à jour des positions) ---
+            # --- A step (drift: update positions) ---
             # Utilisation de p/m et non des forces !
             q = self.atoms.get_positions()
             q = q + self.dt * p / self.masses
@@ -158,13 +158,13 @@ class LangevinOBABO(MolecularDynamics):
             else:
                 self.atoms.set_positions(q, apply_constraint=False)
 
-            # Mise à jour des forces pour la suite
+            # Update forces for the next step
             forces = self.atoms.get_forces()
 
-            # --- Étape B (Demi-kick de force) ---
+            # --- B step (half force kick) ---
             p = p + (self.dt / 2) * forces
 
-            # --- Étape O (Demi-pas de friction/bruit) ---
+            # --- O step (half friction/noise step) ---
             eta = self.rng.standard_normal(size=(len(self.atoms), 3))
             self.comm.broadcast(eta, 0)
             p = (1 / self.c1) * (self.c2 * p + self.c3 * eta)
@@ -180,16 +180,16 @@ class LangevinOBABO(MolecularDynamics):
         self.atoms.info['noise'] = noise
 
     def _1st_half_step(self, forces):
-        # --- Étape O (Demi-pas de friction/bruit) ---
+        # --- O step (half friction/noise step) ---
         xi = self.rng.standard_normal(size=(len(self.atoms), 3))
         self.comm.broadcast(xi, 0)
         p = self.atoms.get_momenta()
         p = (1 / self.c1) * (self.c2 * p + self.c3 * xi)
 
-        # --- Étape B (Demi-kick de force) ---
+        # --- B step (half force kick) ---
         p = p + (self.dt / 2) * forces
 
-        # --- Étape A (Drift : Mise à jour des positions) ---
+        # --- A step (drift: update positions) ---
         # Utilisation de p/m et non des forces !
         q = self.atoms.get_positions()
         q = q + self.dt * p / self.masses
@@ -203,10 +203,10 @@ class LangevinOBABO(MolecularDynamics):
 
     def _2nd_half_step(self, forces):
         p = self.atoms.get_momenta()
-        # --- Étape B (Demi-kick de force) ---
+        # --- B step (half force kick) ---
         p = p + (self.dt / 2) * forces
 
-        # --- Étape O (Demi-pas de friction/bruit) ---
+        # --- O step (half friction/noise step) ---
         eta = self.rng.standard_normal(size=(len(self.atoms), 3))
         self.comm.broadcast(eta, 0)
         p = (1 / self.c1) * (self.c2 * p + self.c3 * eta)

@@ -9,13 +9,13 @@ from girsanov_uq.integrators.langevinOBABO import LangevinOBABO
 from aseams.cvs import CollectiveVariables
 from aseams.inicondssamplers import SingleWalkerSampler, MultiWalkerSampler
 
-# parameters, atoms, potentials and integrator (TO ADAPT in common/model_block.py)
+# Parameters, atoms, potentials, and integrator (edit in common/model_block.py)
 n_walkers = 10
 n_conditions = None
 # >>> COMMON: common/model_block.py
 # <<< COMMON
 
-# Definition of the CV (TO ADAPT in common/cv_block.py)
+# CV definition (edit in common/cv_block.py)
 # >>> COMMON: common/cv_block.py
 # <<< COMMON
 

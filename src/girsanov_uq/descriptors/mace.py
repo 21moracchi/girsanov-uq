@@ -281,5 +281,5 @@ class MACELinear(MACECalculator):
         
         return descriptor
     def check_state(self, atoms):
-        # Évite le bug de comparaison des tableaux dans atoms.info
+        # Avoid the array comparison bug in atoms.info
         return Calculator.check_state(self, atoms)

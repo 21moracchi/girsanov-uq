@@ -8,13 +8,13 @@ from ase.io.trajectory import Trajectory
 
 from girsanov_uq.post_processing.reweighting import Reweightor
 
-# parameters, atoms, potentials and integrator (TO ADAPT in common/model_block.py)
+# Parameters, atoms, potentials, and integrator (edit in common/model_block.py)
 n_reps = None
 ams_id = None
 # >>> COMMON: common/model_block.py
 # <<< COMMON
 
-# Reweighting parameters (TO ADAPT if needed)
+# Reweighting parameters (edit if needed)
 reweightor = Reweightor(
     calculator=calc,
     integrator="OBABO",

@@ -1,21 +1,21 @@
 #!/bin/bash
 
 
-# On s'assure que le dossier log existe
+# Ensure the log directory exists
 mkdir -p logs
 
-# Parcourt tous les dossiers commençant par FV_replica_
+# Loop over all matching replica directories
 for dir in results/ams_* ; do
     if [ -d "$dir" ]; then
-        echo "Accès au dossier : $dir"
+        echo "Entering directory: $dir"
 
-        # Entre dans le dossier, lance ccc_msub, et revient au parent
-        # Note : remplacez 'job_ini' par le nom de votre script de calcul
+        # Enter the directory, submit the job, then return to the parent
+        # Note: replace 'job_ini' with the name of your compute script
         (cd "$dir" && ccc_msub job_reweight_topaze)
 
-        # Délai pour le scheduler
+        # Scheduler delay
         sleep 0.1
     fi
 done
 
-echo "Toutes les soumissions sont terminées."
+echo "All submissions are complete."

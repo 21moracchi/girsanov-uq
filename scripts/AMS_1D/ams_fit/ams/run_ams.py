@@ -6,13 +6,13 @@ import ase.units as units
 from girsanov_uq.integrators.langevinOBABO import LangevinOBABO
 from aseams.ams import AMS
 
-# parameters, atoms, potentials and integrator (TO ADAPT in common/model_block.py)
+# Parameters, atoms, potentials, and integrator (edit in common/model_block.py)
 n_reps = None
 ams_id = None
 # >>> COMMON: common/model_block.py
 # <<< COMMON
 
-# Definition of the CV (TO ADAPT in common/cv_block.py)
+# CV definition (edit in common/cv_block.py)
 # >>> COMMON: common/cv_block.py
 # <<< COMMON
 

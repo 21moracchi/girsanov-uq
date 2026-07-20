@@ -86,7 +86,7 @@ class RuggedMullerBrown(Calculator):
 
         self.results['energy'] = energy
         self.results['forces'] = forces
-        # Contrainte virielle (Voigt 6 composantes) pour compatibilité ASE.
+        # Virial constraint (6-component Voigt form) for ASE compatibility.
         volume = float(self.atoms.get_volume())
         if volume > 0.0:
             stress_tensor = -np.einsum('ia,ib->ab', pos, forces) / volume

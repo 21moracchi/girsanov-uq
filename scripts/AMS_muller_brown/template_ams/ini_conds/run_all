@@ -1,15 +1,15 @@
 #!/bin/bash
-# Parcourt tous les dossiers commençant par FV_replica_
+# Loop over all matching replica directories
 for dir in FV_replica_*/ ; do
     if [ -d "$dir" ]; then
-        echo "Accès au dossier : $dir"
+        echo "Entering directory: $dir"
         
-        # Entre dans le dossier, lance sbatch, et revient au parent
+        # Enter the directory, submit the job, then return to the parent
         (cd "$dir" && sbatch job)
         
-        # Optionnel : petit délai pour ne pas saturer le scheduler Slurm
+        # Optional delay to avoid overloading the Slurm scheduler
         sleep 0.5
     fi
 done
 
-echo "Toutes les soumissions sont terminées."
+echo "All submissions are complete."

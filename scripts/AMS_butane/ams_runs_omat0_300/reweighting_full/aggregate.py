@@ -54,7 +54,7 @@ with tqdm(total=n_ams, desc="Traitement des dossiers ams") as pbar:
             scores_tensor[i, j, :] = final_score(score)
             fims_tensor[i, j, :, :] = final_fim(fim)
 
-        # 2. Extraction des probabilités (dans ams_dir_path)
+        # 2. Extract probabilities (inside ams_dir_path)
         checkpoint_path = os.path.join(ams_dir_path, ams_folder, "ams_checkpoint.txt")
         if os.path.exists(checkpoint_path):
             try:

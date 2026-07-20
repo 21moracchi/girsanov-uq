@@ -71,4 +71,4 @@ For the butane system, the repository is organized by experiment (`ams_runs_mp0a
 
 ## License
 
-No `LICENSE` file is currently included in this repository. See the **License status** section of `DATA.md` for the current status.
+This project is distributed under the MIT License. See the `LICENSE` file for details.

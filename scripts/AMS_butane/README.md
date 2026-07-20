@@ -1,16 +1,16 @@
-# Workflow AMS butane
+# Butane AMS Workflow
 
-Ce dossier contient les campagnes butane (modèles `mpa`, `mp0a`, `omat0`) et les scripts de post-traitement.
+This directory contains the butane experiments (using the `mpa`, `mp0a`, and `omat0` models) together with the associated post-processing scripts.
 
-## Pré-requis
+## Prerequisites
 
-Les fichiers suivants sont attendus dans `scripts/AMS_butane/models/` (non versionnés dans le dépôt) :
+The following model files are expected in `scripts/AMS_butane/models/` (they are **not** versioned in this repository):
 
 - `mace-mpa-0-medium.model`
 - `mace_mp0a_ft.model`
 - `mace_omat0_ft.model`
 
-## Organisation
+## Directory organization
 
 - `ams_runs_mpa_{200,300,500}/`
 - `ams_runs_mp0a_{200,300,500}/`
@@ -18,15 +18,15 @@ Les fichiers suivants sont attendus dans `scripts/AMS_butane/models/` (non versi
 - `scripts/AMS_butane/theta_mp0a_500/`
 - `scripts/AMS_butane/plots/`
 
-Chaque dossier `ams_runs_*` contient typiquement :
+Each `ams_runs_*` directory typically contains:
 
-- `scripts/AMS_butane/ams_runs_*/make_input_files.py` (génération des dossiers/jobs)
-- `scripts/AMS_butane/ams_runs_*/run_ams.py` (exécution AMS)
-- `scripts/AMS_butane/ams_runs_*/sample_ini_conds/` (génération/organisation des conditions initiales)
-- `scripts/AMS_butane/ams_runs_*/reweighting/` (reweighting + agrégation)
-- `scripts/AMS_butane/ams_runs_*/reweighting_full/` (version complète selon le cas)
+- `scripts/AMS_butane/ams_runs_*/make_input_files.py` – generates input folders and batch jobs
+- `scripts/AMS_butane/ams_runs_*/run_ams.py` – runs the AMS simulations
+- `scripts/AMS_butane/ams_runs_*/sample_ini_conds/` – generates and organizes initial conditions
+- `scripts/AMS_butane/ams_runs_*/reweighting/` – Girsanov reweighting and result aggregation
+- `scripts/AMS_butane/ams_runs_*/reweighting_full/` – full reweighting workflow (when applicable)
 
-## Ordre d'exécution (par cas `ams_runs_*`)
+## Execution order (for each `ams_runs_*` case)
 
 ```sh
 python make_input_files.py
@@ -37,17 +37,21 @@ python make_input_files.py
 python aggregate.py
 ```
 
-Les sorties agrégées sont écrites sous `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/` (ex. `final_scores.npy`, `final_probs.npy`, `ini_D.npy`).
+The aggregated outputs are written to `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/`, including files such as:
 
-## Campagnes theta
+- `final_scores.npy`
+- `final_probs.npy`
+- `ini_D.npy`
 
-Pour `scripts/AMS_butane/theta_mp0a_500/`, lancer depuis ce dossier :
+## Theta campaigns
+
+For the `scripts/AMS_butane/theta_mp0a_500/` directory, run:
 
 ```sh
 ccc_msub submit_theta_batches_topaze.sh
 ```
 
-Puis agréger avec :
+Then aggregate the results with:
 
 ```sh
 python get_results.py

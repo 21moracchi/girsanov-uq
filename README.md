@@ -1,8 +1,12 @@
 # Girsanov UQ
 
-Code du papier sur la propagation d'incertitude paramétrique pour des probabilités d'événements rares avec AMS (Adaptive Multilevel Splitting) et repondération de Girsanov.
+Code accompanying our paper on parametric uncertainty propagation for rare-event probabilities using Adaptive Multilevel Splitting (AMS) and Girsanov reweighting.
 
-Le package Python réutilisable est `girsanov_uq` (`src/girsanov_uq`). Le reste du dépôt contient les pipelines d'expériences (1D, Müller-Brown, dimers, butane), notebooks et scripts de post-traitement.
+The reusable Python package is `girsanov_uq` (`src/girsanov_uq`). The remainder of the repository contains the experimental pipelines (1D, Müller–Brown, dimers, and butane), notebooks, and post-processing scripts.
+
+If you use this repository, please cite:
+
+> L. Moracchini, T. Pigeon, M. Menz, T. Faney, T. D. Swinburne, and M.-C. Marinica, *Girsanov Reweighting for Uncertainty Propagation in Rare-Event Kinetics*, arXiv:2607.13757 (2026). https://arxiv.org/abs/2607.13757
 
 ## Installation
 
@@ -13,38 +17,38 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-Vérification minimale :
+Minimal verification:
 
 ```bash
 python -m unittest tests.test_imports
 ```
 
-## Petit exemple CPU
+## Quick CPU example
 
-Exécuter le notebook de démonstration 1D en local (CPU) :
+Run the local 1D demonstration notebook (CPU):
 
 ```bash
 PYTHONPATH=src jupyter lab notebooks/pops_uncertainty_pipeline_1d.ipynb
 ```
 
-Ce notebook illustre un pipeline complet sur potentiel 1D simplifié (entraînement POPS, AMS, reweighting, agrégation).
+This notebook demonstrates the complete workflow on a simplified 1D potential, including POPS training, AMS simulations, Girsanov reweighting, and uncertainty aggregation.
 
-## Structure du dépôt
+## Repository structure
 
-- `src/girsanov_uq/` : package Python (intégrateurs, potentiels, reweighting)
-- `scripts/AMS_1D/` : expériences 1D (cible et potentiel ajusté)
-- `scripts/AMS_muller_brown/` : expériences Müller-Brown
-- `scripts/AMS_dimers/` : expériences dimer
-- `scripts/AMS_butane/` : expériences butane + scripts POPS/plots
-- `notebooks/` : notebook de démonstration
-- `tests/` : tests légers d'import
-- `DATA.md` : inventaire des fichiers de données/modèles non versionnés
+- `src/girsanov_uq/`: Python package (integrators, potentials, reweighting)
+- `scripts/AMS_1D/`: 1D experiments (target and fitted potentials)
+- `scripts/AMS_muller_brown/`: Müller–Brown experiments
+- `scripts/AMS_dimers/`: dimer experiments
+- `scripts/AMS_butane/`: butane experiments together with POPS scripts and plotting utilities
+- `notebooks/`: demonstration notebook
+- `tests/`: lightweight import tests
+- `DATA.md`: inventory of non-versioned datasets and trained models
 
-## Reproduire les expériences
+## Reproducing the experiments
 
-Les pipelines d'expériences utilisent principalement des jobs batch (`sbatch`/`ccc_msub`) et produisent les sorties sous les dossiers `ams_*`, `ini_conds/*` et `reweighting*`.
+The experimental pipelines are primarily designed for execution on HPC clusters using batch schedulers (`sbatch` or `ccc_msub`). Outputs are generated in the `ams_*`, `ini_conds/*`, and `reweighting*` directories.
 
-Exemples de points d'entrée :
+Example entry points:
 
 ```bash
 python scripts/AMS_1D/ams_fit/run_pipeline.py --n-reps 500
@@ -53,18 +57,18 @@ python scripts/AMS_muller_brown/ams/run_pipeline.py --n-reps 500
 python scripts/AMS_dimers/ams/run_pipeline.py --n-reps 500
 ```
 
-Pour butane, la structure est organisée par cas (`ams_runs_mp0a_*`, `ams_runs_mpa_*`, `ams_runs_omat0_*`) avec orchestration locale via `scripts/AMS_butane/ams_runs_*/make_input_files.py`, `scripts/AMS_butane/ams_runs_*/run_all_topaze`, `scripts/AMS_butane/ams_runs_*/reweighting/*`.
+For the butane system, the repository is organized by experiment (`ams_runs_mp0a_*`, `ams_runs_mpa_*`, `ams_runs_omat0_*`). Local orchestration is handled through `scripts/AMS_butane/ams_runs_*/make_input_files.py`, `scripts/AMS_butane/ams_runs_*/run_all_topaze`, and `scripts/AMS_butane/ams_runs_*/reweighting/*`.
 
-## Correspondance systèmes du papier ↔ scripts/entrées/sorties
+## Mapping between paper systems and repository structure
 
-| Système | Scripts principaux | Entrées principales | Sorties principales |
+| System | Main scripts | Main inputs | Main outputs |
 | --- | --- | --- | --- |
-| 1D (potentiel ajusté) | `scripts/AMS_1D/ams_fit/run_pipeline.py`, `scripts/AMS_1D/ams_fit/aggregate_reweighting.py` | paramètres CLI (`--n-reps`, `--n-ams`, `--n-walkers`), scripts `scripts/AMS_1D/ams_fit/ini_conds/run_ini_conds.py` | `scripts/AMS_1D/ams_fit/ams/ams_*/reweighting_results.npz`, `scripts/AMS_1D/ams_fit/reweighting_aggregate.npz` |
-| 1D (potentiel cible) | `scripts/AMS_1D/ams_target/run_pipeline.py`, `scripts/AMS_1D/ams_target/aggregate_reweighting.py` | paramètres CLI (`--n-reps`, `--n-ams`, `--n-walkers`), scripts `scripts/AMS_1D/ams_target/ini_conds/run_ini_conds.py` | `scripts/AMS_1D/ams_target/ams/ams_*/reweighting_results.npz`, `scripts/AMS_1D/ams_target/reweighting_aggregate.npz` |
-| Müller-Brown | `scripts/AMS_muller_brown/ams/run_pipeline.py`, `scripts/AMS_muller_brown/ams/aggregate_reweighting.py` | paramètres CLI du pipeline, scripts `scripts/AMS_muller_brown/ams/ini_conds/run_ini_conds.py` | `scripts/AMS_muller_brown/ams/ams/ams_*/reweighting_results.npz`, `scripts/AMS_muller_brown/ams/reweighting_aggregate.npz` |
-| Dimer | `scripts/AMS_dimers/ams/run_pipeline.py`, `scripts/AMS_dimers/ams/aggregate_reweighting.py` | paramètres CLI du pipeline, scripts `scripts/AMS_dimers/ams/ini_conds/run_ini_conds.py` | `scripts/AMS_dimers/ams/ams/ams_*/reweighting_results.npz`, `scripts/AMS_dimers/ams/reweighting_aggregate.npz` |
-| Butane | `scripts/AMS_butane/ams_runs_*/run_ams.py`, `scripts/AMS_butane/ams_runs_*/reweighting/{reweight.py,aggregate.py}`, `scripts/AMS_butane/theta_mp0a_500/*` | modèles MACE sous `scripts/AMS_butane/models/` (non versionnés), trajectoires AMS/ini_conds générées en batch | `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_scores.npy`, `final_probs.npy`, `ini_D.npy`; `scripts/AMS_butane/theta_mp0a_500/results/{probs.npy,thetas.npy}` |
+| 1D (fitted potential) | `scripts/AMS_1D/ams_fit/run_pipeline.py`, `scripts/AMS_1D/ams_fit/aggregate_reweighting.py` | CLI parameters (`--n-reps`, `--n-ams`, `--n-walkers`), `scripts/AMS_1D/ams_fit/ini_conds/run_ini_conds.py` | `scripts/AMS_1D/ams_fit/ams/ams_*/reweighting_results.npz`, `scripts/AMS_1D/ams_fit/reweighting_aggregate.npz` |
+| 1D (target potential) | `scripts/AMS_1D/ams_target/run_pipeline.py`, `scripts/AMS_1D/ams_target/aggregate_reweighting.py` | CLI parameters (`--n-reps`, `--n-ams`, `--n-walkers`), `scripts/AMS_1D/ams_target/ini_conds/run_ini_conds.py` | `scripts/AMS_1D/ams_target/ams/ams_*/reweighting_results.npz`, `scripts/AMS_1D/ams_target/reweighting_aggregate.npz` |
+| Müller–Brown | `scripts/AMS_muller_brown/ams/run_pipeline.py`, `scripts/AMS_muller_brown/ams/aggregate_reweighting.py` | Pipeline CLI parameters, `scripts/AMS_muller_brown/ams/ini_conds/run_ini_conds.py` | `scripts/AMS_muller_brown/ams/ams/ams_*/reweighting_results.npz`, `scripts/AMS_muller_brown/ams/reweighting_aggregate.npz` |
+| Dimer | `scripts/AMS_dimers/ams/run_pipeline.py`, `scripts/AMS_dimers/ams/aggregate_reweighting.py` | Pipeline CLI parameters, `scripts/AMS_dimers/ams/ini_conds/run_ini_conds.py` | `scripts/AMS_dimers/ams/ams/ams_*/reweighting_results.npz`, `scripts/AMS_dimers/ams/reweighting_aggregate.npz` |
+| Butane | `scripts/AMS_butane/ams_runs_*/run_ams.py`, `scripts/AMS_butane/ams_runs_*/reweighting/{reweight.py,aggregate.py}`, `scripts/AMS_butane/theta_mp0a_500/*` | MACE models in `scripts/AMS_butane/models/` (not versioned), AMS trajectories and initial conditions generated through batch jobs | `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_scores.npy`, `final_probs.npy`, `ini_D.npy`; `scripts/AMS_butane/theta_mp0a_500/results/{probs.npy,thetas.npy}` |
 
-## Licence
+## License
 
-Aucun fichier `LICENSE` n'est présent dans ce dépôt à ce stade. Voir la section "License status" de `DATA.md` pour l'état constaté sans choix arbitraire de licence.
+No `LICENSE` file is currently included in this repository. See the **License status** section of `DATA.md` for the current status.

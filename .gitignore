@@ -12,3 +12,26 @@ build/
 *out*
 *err*
 *.tar.gz
+
+# Python
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+*.egg-info/
+
+# Data / outputs
+data/
+build/
+*.traj
+*.npy
+*.npz
+*.tar.gz
+
+# Logs
+*out*
+*err*
+
+# AMS generated files
+**/ams_checkpoint.txt
+**/ams_progress.txt
+**/ini_conds/*_used.extxyz

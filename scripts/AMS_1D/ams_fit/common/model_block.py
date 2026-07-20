@@ -11,7 +11,7 @@ atoms = Atoms("H", positions=[[R, 0.0, 0.0]])
 atoms.set_cell((20.0, 20.0, 20.0))
 
 
-weights_path = "/ifpengpfs/scratch/work/r11/moracchl/girsAMS/scripts/AMS_pops_toysystem/weights.npy"
+weights_path = next(parent / "weights.npy" for parent in Path(__file__).resolve().parents if (parent / "weights.npy").exists())
 
 
 theta_vec = np.load(weights_path)

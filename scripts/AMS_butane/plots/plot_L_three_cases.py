@@ -26,7 +26,7 @@ plt.rcParams.update(
 def find_repo_root():
     for candidate in [Path.cwd(), *Path.cwd().parents]:
         if (candidate / "scripts/AMS_1D").exists() and (
-            candidate / "scripts/AMS_butane_3"
+            candidate / "scripts/AMS_butane"
         ).exists():
             return candidate.resolve()
     raise FileNotFoundError("Could not find the repository root.")
@@ -40,7 +40,7 @@ def load_1d_case(repo_root):
 
 
 def load_butane_case(repo_root, model):
-    base_dir = repo_root / "scripts/AMS_butane_3" / f"ams_runs_{model}_300"
+    base_dir = repo_root / "scripts/AMS_butane" / f"ams_runs_{model}_300"
     scores = np.load(base_dir / "reweighting/aggregated_results/final_scores.npy")
     theta_samples = np.load(
         base_dir / f"pops/binary_data/posterior_samples_{model}.npy"

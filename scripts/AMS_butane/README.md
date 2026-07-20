@@ -15,7 +15,6 @@ The following model files are expected in `scripts/AMS_butane/models/` (they are
 - `ams_runs_mpa_{200,300,500}/`
 - `ams_runs_mp0a_{200,300,500}/`
 - `ams_runs_omat0_{200,300,500}/`
-- `scripts/AMS_butane/theta_mp0a_500/`
 - `scripts/AMS_butane/plots/`
 
 Each `ams_runs_*` directory typically contains:
@@ -43,16 +42,3 @@ The aggregated outputs are written to `scripts/AMS_butane/ams_runs_*/reweighting
 - `final_probs.npy`
 - `ini_D.npy`
 
-## Theta campaigns
-
-For the `scripts/AMS_butane/theta_mp0a_500/` directory, run:
-
-```sh
-ccc_msub submit_theta_batches_topaze.sh
-```
-
-Then aggregate the results with:
-
-```sh
-python get_results.py
-```

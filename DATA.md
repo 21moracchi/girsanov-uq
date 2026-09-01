@@ -1,44 +1,44 @@
 # Data inventory and availability
 
-Ce dépôt ne versionne pas les gros artefacts de calcul (trajectoires, agrégats `.npy/.npz`, modèles entraînés). Cette page documente ce qui est attendu par les scripts.
+This repository does not version large computational artifacts (trajectories, `.npy/.npz` aggregates, trained models). This page documents what the scripts expect.
 
-## Règles de versionnement observées
+## Observed versioning rules
 
-- `.gitignore` exclut explicitement `*.traj`, `*.npy`, `*.npz`.
-- Les fichiers de modèles `.model` nécessaires aux expériences butane ne sont pas présents dans le dépôt.
+- `.gitignore` explicitly excludes `*.traj`, `*.npy`, `*.npz`.
+- The `.model` files required for butane experiments are not present in the repository.
 
-## Modèles attendus (absents du dépôt)
+## Expected models (absent from the repository)
 
 ### Butane (`scripts/AMS_butane/models/`)
 
-Les scripts `run_ams.py`, `sample_ini_conds/run_ini_conds.py` et `reweighting/compute_ini_D.py` des dossiers `ams_runs_*` attendent :
+The `run_ams.py`, `sample_ini_conds/run_ini_conds.py`, and `reweighting/compute_ini_D.py` scripts in the `ams_runs_*` folders expect:
 
 - `mace-mpa-0-medium.model`
 - `mace_mp0a_ft.model`
 - `mace_omat0_ft.model`
 
-Références :
+References:
 - `scripts/AMS_butane/ams_runs_mpa_300/run_ams.py`
 - `scripts/AMS_butane/ams_runs_mp0a_300/run_ams.py`
 - `scripts/AMS_butane/ams_runs_omat0_300/run_ams.py`
-- mêmes motifs dans `*_200`, `*_500` et `theta_mp0a_500/theta_*/run_ams.py`.
+- same patterns in `*_200`, `*_500`, and `theta_mp0a_500/theta_*/run_ams.py`.
 
-## Trajectoires attendues/générées (non versionnées)
+## Expected/generated trajectories (not versioned)
 
-Ces trajectoires sont consommées par les scripts de reweighting et produites pendant les runs AMS/MD :
+These trajectories are consumed by reweighting scripts and produced during AMS/MD runs:
 
-- `rep_*.traj` dans les dossiers `ams/ams_*` (1D, Müller-Brown, dimers)
-- `md_traj_*.traj` dans `ini_conds/` (échantillonnage des conditions initiales)
-- `.traj` dans les dossiers butane pour `reweighting/reweight.py` et `reweighting_full/reweight.py`
+- `rep_*.traj` in `ams/ams_*` folders (1D, Müller-Brown, dimers)
+- `md_traj_*.traj` in `ini_conds/` (initial condition sampling)
+- `.traj` files in butane folders for `reweighting/reweight.py` and `reweighting_full/reweight.py`
 
-Références :
+References:
 - `scripts/AMS_1D/ams_fit/ams/run_reweight.py`
 - `scripts/AMS_1D/ams_target/ams/run_reweight.py`
 - `scripts/AMS_muller_brown/ams/ams/run_reweight.py`
 - `scripts/AMS_dimers/ams/ams/run_reweight.py`
 - `scripts/AMS_butane/ams_runs_*/reweighting/reweight.py`
 
-## Fichiers `.npy/.npz` attendus par les notebooks (absents du dépôt)
+## `.npy/.npz` files expected by notebooks (absent from the repository)
 
 ### AMS_1D
 
@@ -47,14 +47,14 @@ Références :
 - `scripts/AMS_1D/pops_data/misspecification_sigma.npy`
 - `scripts/AMS_1D/pops_data/posterior_samples.npy`
 
-Référence : `scripts/AMS_1D/post_process.ipynb`.
+Reference: `scripts/AMS_1D/post_process.ipynb`.
 
 ### AMS_muller_brown
 
 - `scripts/AMS_muller_brown/data_muller_brown/reweighting_aggregate.npz`
 - `scripts/AMS_muller_brown/data_muller_brown/*_ref_probs.npy`
 
-Référence : `scripts/AMS_muller_brown/post_process.ipynb`.
+Reference: `scripts/AMS_muller_brown/post_process.ipynb`.
 
 ### AMS_dimers
 
@@ -64,11 +64,11 @@ Référence : `scripts/AMS_muller_brown/post_process.ipynb`.
 - `scripts/AMS_dimers/data_dimer/probas_epsilon-.npy`
 - `scripts/AMS_dimers/data_dimer/probas_epsilon--.npy`
 
-Référence : `scripts/AMS_dimers/post_process.ipynb`.
+Reference: `scripts/AMS_dimers/post_process.ipynb`.
 
-### Butane (sorties de pipeline non versionnées)
+### Butane (non-versioned pipeline outputs)
 
-Exemples de sorties écrites par les scripts :
+Examples of outputs written by the scripts:
 
 - `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_scores.npy`
 - `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_probs.npy`
@@ -76,14 +76,14 @@ Exemples de sorties écrites par les scripts :
 - `scripts/AMS_butane/theta_mp0a_500/results/probs.npy`
 - `scripts/AMS_butane/theta_mp0a_500/results/thetas.npy`
 
-Références : `aggregate.py`, `compute_ini_D.py`, `get_results.py`, scripts de `plots/`.
+References: `aggregate.py`, `compute_ini_D.py`, `get_results.py`, `plots/` scripts.
 
 ## License status
 
-Constat actuel :
+Current state:
 
-- Aucun fichier `LICENSE`/`LICENCE` n'est présent à la racine du dépôt.
-- `pyproject.toml` ne déclare pas de licence distribuable.
-- `CITATION.cff` est fourni avec `license: NOASSERTION` pour refléter cet état sans choisir arbitrairement une licence.
+- No `LICENSE`/`LICENCE` file is present at the repository root.
+- `pyproject.toml` does not declare a distributable license.
+- `CITATION.cff` is provided with `license: NOASSERTION` to reflect this state without arbitrarily choosing a license.
 
-Action recommandée (hors de ce passage) : choisir explicitement une licence et ajouter un fichier `LICENSE` validé par les mainteneurs.
+Recommended action (outside the scope of this section): explicitly choose a license and add a `LICENSE` file validated by the maintainers.

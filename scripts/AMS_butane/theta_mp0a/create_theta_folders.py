@@ -58,32 +58,54 @@ def write_theta_index(make_file, theta_index):
 def repair_make_input_file(make_file):
     """Ensure generated AMS scripts use the per-AMS ini-cond subdirectory."""
     text = make_file.read_text()
-    if "f'../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}'" in text:
-        return
-    if "import re\n" not in text:
-        text = text.replace("import os\n", "import os\nimport re\n", 1)
-
-    # Remove older, path-specific replacement blocks. They do not match the
-    # theta run_ams.py path and consequently leave all jobs on ini_conds/.
-    text = re.sub(
-        r"^\s*text = text\.replace\(.*ams\.set_ini_cond_dir.*\n",
-        "",
-        text,
-        flags=re.MULTILINE,
-    )
-
-    marker = "    with open(f'{dirname}/run_ams.py', 'wt') as f_out:\n"
-    block = (
-        "    text = re.sub(\n"
-        "        r'(?m)^\\s*ams\\.set_ini_cond_dir\\(\\\".*?\\\"\\)',\n"
-        "        f'ams.set_ini_cond_dir(\\\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}\\\")',\n"
-        "        text,\n"
+    replacement = (
+        "    text = text.replace(\n"
+        "        'ams.set_ini_cond_dir(\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds\")',\n"
+        "        f'ams.set_ini_cond_dir(\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}\")',\n"
         "    )\n"
     )
+    pattern = (
+        r"    text = text\.replace\(\n"
+        r"        'ams\.set_ini_cond_dir\(.*?\)',\n"
+        r"        f'ams\.set_ini_cond_dir\(.*?\)',\n"
+        r"    \)\n"
+    )
+    text, n_subs = re.subn(pattern, replacement, text, count=1)
+    if n_subs == 1:
+        make_file.write_text(text)
+        return
+
+    marker = "    with open(f'{dirname}/run_ams.py', 'wt') as f_out:\n"
     if marker not in text:
         raise RuntimeError(f"Structure inattendue dans {make_file}")
-    text = text.replace(marker, block + marker, 1)
+    text = text.replace(marker, replacement + marker, 1)
     make_file.write_text(text)
+
+
+def repair_generated_runs(theta_dir):
+    """Update already-generated ams_i/run_ams.py files in place."""
+    repaired = 0
+    for run_file in theta_dir.glob("ams_*/run_ams.py"):
+        match = re.fullmatch(r"ams_(\d+)", run_file.parent.name)
+        if match is None:
+            continue
+        ams_index = match.group(1)
+        text = run_file.read_text()
+        replacement = (
+            "ams.set_ini_cond_dir("
+            f"\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{ams_index}\")"
+        )
+        text, n_subs = re.subn(
+            r"(?m)^\s*ams\.set_ini_cond_dir\(.*\)\s*$",
+            replacement,
+            text,
+            count=1,
+        )
+        if n_subs != 1:
+            raise RuntimeError(f"set_ini_cond_dir introuvable dans {run_file}")
+        run_file.write_text(text)
+        repaired += 1
+    return repaired
 
 
 def ensure_template():
@@ -142,18 +164,12 @@ def ensure_template():
     (TEMPLATE / "run_ams.py").write_text(run_text)
 
     make_text = (BASE_RUN / "make_input_files.py").read_text()
-    make_text = make_text.replace("import os\n", "import os\nimport re\n", 1)
     make_text = re.sub(r"^n_ams\s*=\s*\d+\s*$", f"n_ams = {N_AMS}", make_text, count=1, flags=re.MULTILINE)
     make_text = make_text.replace(
         "# number of AMS jobs to prepare\n",
         "# AMS sample selected from the posterior.\n"
         "theta_index = 0\n"
         "# number of AMS jobs to prepare\n",
-        1,
-    )
-    make_text = make_text.replace(
-        'ams.set_ini_cond_dir("../sample_ini_conds/ini_conds")',
-        'ams.set_ini_cond_dir("../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}")',
         1,
     )
     make_text = make_text.replace(
@@ -168,17 +184,8 @@ def ensure_template():
         "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n",
         1,
     )
-    make_text = make_text.replace(
-        "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n",
-        "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n"
-        "    text = re.sub(\n"
-        "        r'(?m)^\\s*ams\\.set_ini_cond_dir\\(\\\".*?\\\"\\)',\n"
-        "        f'ams.set_ini_cond_dir(\\\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}\\\")',\n"
-        "        text,\n"
-        "    )\n",
-        1,
-    )
     (TEMPLATE / "make_input_files.py").write_text(make_text)
+    repair_make_input_file(TEMPLATE / "make_input_files.py")
 
     print(f"Template theta_0 reconstruit depuis {BASE_RUN}")
 
@@ -187,12 +194,24 @@ def main():
     parser = argparse.ArgumentParser(
         description="Create new theta_i folders with random theta_index values below 2000."
     )
-    parser.add_argument("n", type=int, help="number of theta folders to add")
+    parser.add_argument(
+        "n",
+        type=int,
+        nargs="?",
+        default=0,
+        help="number of theta folders to add (omit with --repair-existing)",
+    )
+    parser.add_argument(
+        "--repair-existing",
+        action="store_true",
+        help="repair ini-cond paths in existing make_input_files.py and ams_i/run_ams.py",
+    )
     args = parser.parse_args()
 
-    if args.n <= 0:
-        raise SystemExit("n doit etre strictement positif.")
-    ensure_template()
+    if args.n < 0 or (args.n == 0 and not args.repair_existing):
+        raise SystemExit("Donner n > 0, ou utiliser --repair-existing.")
+    if args.n > 0:
+        ensure_template()
 
     existing_dirs = theta_dirs()
     for theta_dir in existing_dirs:
@@ -208,6 +227,11 @@ def main():
             )
             make_file.write_text(text)
             repair_make_input_file(make_file)
+        if args.repair_existing:
+            repaired = repair_generated_runs(theta_dir)
+            print(f"{theta_dir.name}: {repaired} fichiers ams_i/run_ams.py corriges")
+    if args.n == 0:
+        return
     if existing_dirs:
         next_folder_id = max(int(path.name.split("_")[1]) for path in existing_dirs) + 1
     else:

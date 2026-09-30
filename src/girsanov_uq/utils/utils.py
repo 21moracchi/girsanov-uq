@@ -16,6 +16,9 @@ plt.rcParams.update({
     'legend.fontsize': 20
 })
 
+
+plt.rcParams["mathtext.fontset"] = "stix"
+plt.rcParams["font.family"] = "serif"
 def compute_derivative_check(scores, fims, probs, delta_theta, alpha_range=0.1, n_points=200, samples=None, ax=None, theta_reference=None):
     alphas = np.linspace(-alpha_range, alpha_range, n_points)
     n_traj = len(probs)
@@ -622,9 +625,23 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
                                prior_dist='normal', xlim=None, ax=None,
                                n_samples=2000, 
                                rng=None, use_Ahat=False, n_theta_plot=5, theta_plot_indices=None,
-                               initial_descriptors=None, beta=None):
+                               initial_descriptors=None, beta=None,
+                               score_average='probability_weighted'):
+    """Plot probability uncertainty with optional AMS score aggregation.
+
+    ``score_average`` controls the score average used by the log-linear
+    cumulant estimator. The default, ``'probability_weighted'``, uses
+    sum_j p_j <s_j> / sum_j p_j and preserves the first-order term of the
+    aggregated linear estimator. ``'unweighted'`` keeps the previous equation
+    variant with a plain average over AMS realizations for comparison.
+    """
     fontsize = 15
     eps = 1e-12
+    valid_score_averages = ('probability_weighted', 'unweighted')
+    if score_average not in valid_score_averages:
+        raise ValueError(
+            "score_average must be 'probability_weighted' or 'unweighted'"
+        )
 
     rng = np.random.default_rng(rng)
 
@@ -657,10 +674,13 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
 
         elif method == 'loglinear':
             p_0 = np.mean(model_probs)
-            G_all = model_probs[:, None] * projected
-            bar_G = np.mean(G_all, axis=0)
+            if score_average == 'probability_weighted':
+                G_all = model_probs[:, None] * projected
+                bar_G = np.mean(G_all, axis=0)
+                log_slope = bar_G / p_0
+            else:
+                log_slope = np.mean(projected, axis=0)
 
-            log_slope = bar_G / p_0
             p_theta = (p_0 * np.exp(log_slope)) / Z
 
             if variance == 'estimator':
@@ -668,19 +688,33 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
                 sigma_theta = np.zeros_like(p_theta)
 
                 for m in range(thetas_sample.shape[1]):
-                    G_m = G_all[:, m]
-                    var_G_m = np.var(G_m) / n_traj
-                    cov_P_G = np.cov(model_probs, G_m)[0, 1] / n_traj
-
                     exp_factor = np.exp(log_slope[m]) / Z[m]
-                    df_dP = exp_factor * (1.0 - log_slope[m])
-                    df_dG = exp_factor
+                    if score_average == 'probability_weighted':
+                        G_m = G_all[:, m]
+                        var_G_m = np.var(G_m) / n_traj
+                        cov_P_G = np.cov(model_probs, G_m)[0, 1] / n_traj
 
-                    var_f = (
-                        (df_dP**2) * var_P
-                        + (df_dG**2) * var_G_m
-                        + 2.0 * df_dP * df_dG * cov_P_G
-                    )
+                        df_dP = exp_factor * (1.0 - log_slope[m])
+                        df_dG = exp_factor
+
+                        var_f = (
+                            (df_dP**2) * var_P
+                            + (df_dG**2) * var_G_m
+                            + 2.0 * df_dP * df_dG * cov_P_G
+                        )
+                    else:
+                        L_m = projected[:, m]
+                        var_L_m = np.var(L_m) / n_traj
+                        cov_P_L = np.cov(model_probs, L_m)[0, 1] / n_traj
+
+                        df_dP = exp_factor
+                        df_dL = p_0 * exp_factor
+
+                        var_f = (
+                            (df_dP**2) * var_P
+                            + (df_dL**2) * var_L_m
+                            + 2.0 * df_dP * df_dL * cov_P_L
+                        )
 
                     sigma_theta[m] = np.sqrt(max(0.0, var_f))
 
@@ -802,13 +836,13 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
 
     model_samples = rng.normal(mean_prob, sigma_model, size=n_samples)
     sample_groups = [rho_pi_samples, model_samples]
-    labels = [r'UQ $\pi$', r'MLE $\theta_\mathcal{L}$']
+    labels = [r'UQ $\int \mathbf{P}(\hat p \mid \theta)\pi(\mathrm{d}\theta)$', r' MLE $\mathbf{P}(\hat p \mid \theta_\mathcal{L})$']
     colors = ["tab:green", "tab:orange"]
 
     if ref_probs is not None:
         ref_samples = rng.normal(mean_prob_ref, sigma_model_ref, size=n_samples)
         sample_groups.append(ref_samples)
-        labels.append(r'Reference')
+        labels.append(r'Reference $\mathbf{P}(\hat p_\mathrm{ref})$')
         colors.append("black")
 
     sample_groups = [
@@ -819,7 +853,7 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
     if use_Ahat:
         sample_groups = [-np.log10(samples) for samples in sample_groups]
         theta_plot_samples = [-np.log10(samples) for samples in theta_plot_samples]
-        xlabel = r'$-\log_{10}(p)$'
+        xlabel = r'$-\log_{10}(\hat p)$'
     else:
         xlabel = r'$p = p_{A \to B}(\partial A)$'
 
@@ -871,7 +905,7 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
         ax.plot(q50, position, marker='o', color='black', markersize=4)
 
     ax.set_yticks(np.r_[theta_position, positions])
-    ax.set_yticklabels([r'Samples $\theta_i \sim \pi$'] + labels)
+    ax.set_yticklabels([r'Samples $\mathbf{P}(\hat p \mid \theta_i )$'] + labels)
     ax.set_xlabel(xlabel)
     ax.grid(True, axis='x', linestyle=':', alpha=0.6)
 

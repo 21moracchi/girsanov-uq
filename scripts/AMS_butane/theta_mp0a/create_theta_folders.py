@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 TEMPLATE = ROOT / "theta_0"
 BASE_RUN = ROOT.parent / "ams_runs_mp0a_500"
+N_AMS = 70
 FILES_TO_COPY = [
     "job",
     "job_topaze",
@@ -110,7 +111,7 @@ def ensure_template():
     (TEMPLATE / "run_ams.py").write_text(run_text)
 
     make_text = (BASE_RUN / "make_input_files.py").read_text()
-    make_text = make_text.replace("n_ams = 70", "n_ams = 100", 1)
+    make_text = re.sub(r"^n_ams\s*=\s*\d+\s*$", f"n_ams = {N_AMS}", make_text, count=1, flags=re.MULTILINE)
     make_text = make_text.replace(
         "# number of AMS jobs to prepare\n",
         "# AMS sample selected from the posterior.\n"
@@ -152,6 +153,18 @@ def main():
     ensure_template()
 
     existing_dirs = theta_dirs()
+    for theta_dir in existing_dirs:
+        make_file = theta_dir / "make_input_files.py"
+        if make_file.exists():
+            text = make_file.read_text()
+            text = re.sub(
+                r"^n_ams\s*=\s*\d+\s*$",
+                f"n_ams = {N_AMS}",
+                text,
+                count=1,
+                flags=re.MULTILINE,
+            )
+            make_file.write_text(text)
     if existing_dirs:
         next_folder_id = max(int(path.name.split("_")[1]) for path in existing_dirs) + 1
     else:

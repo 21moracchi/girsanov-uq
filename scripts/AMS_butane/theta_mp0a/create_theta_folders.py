@@ -55,6 +55,37 @@ def write_theta_index(make_file, theta_index):
     make_file.write_text(text)
 
 
+def repair_make_input_file(make_file):
+    """Ensure generated AMS scripts use the per-AMS ini-cond subdirectory."""
+    text = make_file.read_text()
+    if "f'../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}'" in text:
+        return
+    if "import re\n" not in text:
+        text = text.replace("import os\n", "import os\nimport re\n", 1)
+
+    # Remove older, path-specific replacement blocks. They do not match the
+    # theta run_ams.py path and consequently leave all jobs on ini_conds/.
+    text = re.sub(
+        r"^\s*text = text\.replace\(.*ams\.set_ini_cond_dir.*\n",
+        "",
+        text,
+        flags=re.MULTILINE,
+    )
+
+    marker = "    with open(f'{dirname}/run_ams.py', 'wt') as f_out:\n"
+    block = (
+        "    text = re.sub(\n"
+        "        r'(?m)^\\s*ams\\.set_ini_cond_dir\\(\\\".*?\\\"\\)',\n"
+        "        f'ams.set_ini_cond_dir(\\\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}\\\")',\n"
+        "        text,\n"
+        "    )\n"
+    )
+    if marker not in text:
+        raise RuntimeError(f"Structure inattendue dans {make_file}")
+    text = text.replace(marker, block + marker, 1)
+    make_file.write_text(text)
+
+
 def ensure_template():
     """Rebuild theta_0 from the standard AMS run if it was deleted."""
     if TEMPLATE.is_dir():
@@ -111,6 +142,7 @@ def ensure_template():
     (TEMPLATE / "run_ams.py").write_text(run_text)
 
     make_text = (BASE_RUN / "make_input_files.py").read_text()
+    make_text = make_text.replace("import os\n", "import os\nimport re\n", 1)
     make_text = re.sub(r"^n_ams\s*=\s*\d+\s*$", f"n_ams = {N_AMS}", make_text, count=1, flags=re.MULTILINE)
     make_text = make_text.replace(
         "# number of AMS jobs to prepare\n",
@@ -134,6 +166,16 @@ def ensure_template():
         "text = text.replace('dyn_seed = None', f'dyn_seed = {dyn_seeds[i - offset]}')\n",
         "text = text.replace('dyn_seed = None', f'dyn_seed = {dyn_seeds[i - offset]}')\n"
         "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n",
+        1,
+    )
+    make_text = make_text.replace(
+        "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n",
+        "    text = text.replace('theta_index = None', f'theta_index = {theta_index}')\n"
+        "    text = re.sub(\n"
+        "        r'(?m)^\\s*ams\\.set_ini_cond_dir\\(\\\".*?\\\"\\)',\n"
+        "        f'ams.set_ini_cond_dir(\\\"../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{i}\\\")',\n"
+        "        text,\n"
+        "    )\n",
         1,
     )
     (TEMPLATE / "make_input_files.py").write_text(make_text)
@@ -165,6 +207,7 @@ def main():
                 flags=re.MULTILINE,
             )
             make_file.write_text(text)
+            repair_make_input_file(make_file)
     if existing_dirs:
         next_folder_id = max(int(path.name.split("_")[1]) for path in existing_dirs) + 1
     else:

@@ -96,7 +96,7 @@ def ensure_template():
     run_text = run_text.replace(
         "calc = MACELinear(model_path=mace_model_path, device=device, default_dtype='float32')",
         "posterior_samples = np.load("
-        "'../../../ams_runs_mp0a_500/pops/binary_data/posterior_samples_mp0a.npy')\n"
+        "'../../../ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy')\n"
         "theta = lambda_scale * posterior_samples[:, theta_index]\n"
         "calc = MACELinear(model_path=mace_model_path, device=device, "
         "default_dtype='float32', linear_weights=theta)",

@@ -7,7 +7,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parent
-POSTERIOR_PATH = ROOT / "../ams_runs_mp0a_500/pops/binary_data/posterior_samples_mp0a.npy"
+POSTERIOR_PATH = ROOT / "../ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy"
 RESULTS_DIR = ROOT / "results"
 LAMBDA_SCALE = float(os.environ.get("LAMBDA", "5.0"))
 

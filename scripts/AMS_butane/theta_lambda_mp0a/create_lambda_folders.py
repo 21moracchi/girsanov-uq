@@ -39,15 +39,15 @@ def make_run_template():
     )
     text = text.replace(
         "mace_model_path = '../../models/mace_mp0a_ft.model'",
-        "mace_model_path = '../../../models/mace_mp0a_ft.model'",
+        "mace_model_path = '../../../../models/mace_mp0a_ft.model'",
         1,
     )
     text = text.replace(
         "calc = MACELinear(model_path=mace_model_path, device=device, default_dtype='float32')",
         "posterior_samples = np.load(\n"
-        "    '../../../ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy'\n"
+        "    '../../../../ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy'\n"
         ")\n"
-        "theta_l = np.load('../../../ams_runs_mp0a_300/pops/binary_data/w_corrector_mp0a.npy')\n"
+        "theta_l = np.load('../../../../ams_runs_mp0a_300/pops/binary_data/w_corrector_mp0a.npy')\n"
         "delta_theta = posterior_samples[:, theta_index] - theta_l\n"
         "theta = theta_l + lambda_value * delta_theta\n"
         "calc = MACELinear(model_path=mace_model_path, device=device, "
@@ -56,7 +56,7 @@ def make_run_template():
     )
     text = text.replace(
         'ams.set_ini_cond_dir("../sample_ini_conds/ini_conds")',
-        'ams.set_ini_cond_dir("../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds")',
+        'ams.set_ini_cond_dir("../../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds")',
         1,
     )
     required = ("theta_index = None", "lambda_value = None", "linear_weights=theta")
@@ -93,7 +93,7 @@ for i in range(n_ams):
     text = text.replace("lambda_value = None", f"lambda_value = {{lambda_value}}")
     text = re.sub(
         r'(?m)^\\s*ams\\.set_ini_cond_dir\\(.*\\)\\s*$',
-        f'ams.set_ini_cond_dir("../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{{i}}")',
+        f'ams.set_ini_cond_dir("../../../../ams_runs_mp0a_500/sample_ini_conds/ini_conds/{{i}}")',
         text,
         count=1,
     )

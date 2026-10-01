@@ -20,10 +20,16 @@ REWEIGHTING_DIR = ROOT.parent / "ams_runs_mp0a_500/reweighting/aggregated_result
 OUTPUT_PATH = ROOT / "reweighting_vs_lambda.png"
 
 
-def sem(values, axis):
-    n = np.sum(np.isfinite(values), axis=axis)
-    std = np.nanstd(values, axis=axis, ddof=1)
-    return np.divide(std, np.sqrt(n), out=np.zeros_like(std), where=n > 1)
+def mean_and_sem_by_lambda(values):
+    means = np.full(values.shape[0], np.nan)
+    errors = np.zeros(values.shape[0])
+    for index, row in enumerate(values):
+        finite = row[np.isfinite(row)]
+        if finite.size:
+            means[index] = np.mean(finite)
+        if finite.size > 1:
+            errors[index] = np.std(finite, ddof=1) / np.sqrt(finite.size)
+    return means, errors
 
 
 def main():
@@ -68,10 +74,24 @@ def main():
         if direct.ndim != 3 or direct.shape[:2] != expected_shape:
             raise ValueError(f"probs.npy doit commencer par la forme {expected_shape}.")
 
-    fig, axes = plt.subplots(len(theta_indices), 1, figsize=(8, 3.6 * len(theta_indices)), sharex=True)
+    fig, axes = plt.subplots(
+        len(theta_indices),
+        1,
+        figsize=(8, 3.6 * len(theta_indices)),
+        sharex=True,
+        sharey=True,
+    )
     axes = np.atleast_1d(axes)
+    all_central_curves = []
     for sample_id, ax in enumerate(axes):
-        ax.plot(lambdas, reweighted[sample_id], "o-", label="Reweighted", zorder=2)
+        ax.plot(
+            lambdas,
+            reweighted[sample_id],
+            "o-",
+            alpha=0.7,
+            label="Reweighted",
+            zorder=2,
+        )
         ax.fill_between(
             lambdas,
             reweighted_lower[sample_id],
@@ -82,17 +102,30 @@ def main():
 
         central_curves = [reweighted[sample_id]]
         if direct is not None:
-            direct_mean = np.nanmean(direct[sample_id], axis=1)
-            direct_sem = sem(direct[sample_id], axis=1)
+            direct_mean, direct_sem = mean_and_sem_by_lambda(direct[sample_id])
             available = np.isfinite(direct_mean)
             if np.any(available):
                 central_curves.append(direct_mean[available])
                 direct_ci = 1.96 * direct_sem[available]
                 # Keep the lower end positive for the logarithmic y-axis.
                 direct_ci = np.minimum(direct_ci, 0.999 * direct_mean[available])
-                ax.errorbar(
-                    lambdas[available], direct_mean[available], yerr=direct_ci,
-                    fmt="s", capsize=3, label="Direct AMS", zorder=3,
+                direct_lower = direct_mean[available] - direct_ci
+                direct_upper = direct_mean[available] + direct_ci
+                ax.fill_between(
+                    lambdas[available],
+                    direct_lower,
+                    direct_upper,
+                    alpha=0.2,
+                    label="95% CI direct AMS",
+                    zorder=1,
+                )
+                ax.plot(
+                    lambdas[available],
+                    direct_mean[available],
+                    "s",
+                    alpha=0.7,
+                    label="Direct AMS",
+                    zorder=3,
                 )
                 mae_p = np.mean(np.abs(direct_mean[available] - reweighted[sample_id, available]))
                 mae_log = np.mean(np.abs(
@@ -103,19 +136,13 @@ def main():
                     f"MAE p={mae_p:.4e}, MAE log10 p={mae_log:.4f} decades"
                 )
 
-        # Set each panel's log limits from central curve values only. The CI
-        # ribbon remains visible but cannot stretch the y-axis to its extremes.
-        central_positive = np.concatenate(central_curves)
-        central_positive = central_positive[np.isfinite(central_positive) & (central_positive > 0)]
-        log_min = np.log10(central_positive.min())
-        log_max = np.log10(central_positive.max())
-        log_span = log_max - log_min
-        margin = max(0.12, 0.12 * log_span)
-        ax.set_ylim(10 ** (log_min - margin), 10 ** (log_max + margin))
+        # Determine one common log-scale range from all central curves. The
+        # confidence ribbons remain visible but do not set the shared limits.
+        all_central_curves.extend(central_curves)
 
         print(
-            f"sample_{sample_id}: SE(log p_rew) a lambda=+/-10 = "
-            f"{sem_log_reweighted[sample_id, 0]:.3f}/"
+            f"sample_{sample_id}: SE(log p_rew) a lambda={lambdas[0]:.0f}/"
+            f"{lambdas[-1]:.0f} = {sem_log_reweighted[sample_id, 0]:.3f}/"
             f"{sem_log_reweighted[sample_id, -1]:.3f}; "
             "facteur multiplicatif 95% = "
             f"x{np.exp(1.96 * sem_log_reweighted[sample_id, -1]):.1f}"
@@ -126,6 +153,15 @@ def main():
         ax.set_title(f"Sample {sample_id} (posterior index {theta_indices[sample_id]})")
         ax.grid(alpha=0.25, which="both")
         ax.legend()
+
+    central_positive = np.concatenate(all_central_curves)
+    central_positive = central_positive[
+        np.isfinite(central_positive) & (central_positive > 0)
+    ]
+    log_min = np.log10(central_positive.min())
+    log_max = np.log10(central_positive.max())
+    margin = max(0.12, 0.12 * (log_max - log_min))
+    axes[0].set_ylim(10 ** (log_min - margin), 10 ** (log_max + margin))
 
     axes[-1].set_xlabel(r"$\lambda$ in $\theta(\lambda)=\theta_\mathcal{{L}}+\lambda\Delta\theta_i$")
     fig.tight_layout()

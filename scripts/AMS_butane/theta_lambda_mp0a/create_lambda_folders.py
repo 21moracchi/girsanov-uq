@@ -12,11 +12,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent
 BASE_RUN = ROOT.parent / "ams_runs_mp0a_500"
 POSTERIOR_PATH = ROOT.parent / "ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy"
-THETA_L_PATH = ROOT.parent / "ams_runs_mp0a_300/pops/binary_data/w_corrector_mp0a.npy"
 RESULTS_DIR = ROOT / "results"
 N_AMS = 70
 DEFAULT_N_SAMPLES = 3
-LAMBDAS = np.arange(-10, 11, dtype=int)
+LAMBDAS = np.arange(-5, 6, dtype=int)
 
 
 def lambda_name(value):
@@ -47,7 +46,7 @@ def make_run_template():
         "posterior_samples = np.load(\n"
         "    '../../../../ams_runs_mp0a_300/pops/binary_data/posterior_samples_mp0a.npy'\n"
         ")\n"
-        "theta_l = np.load('../../../../ams_runs_mp0a_300/pops/binary_data/w_corrector_mp0a.npy')\n"
+        "theta_l = np.zeros(posterior_samples.shape[0], dtype=posterior_samples.dtype)\n"
         "delta_theta = posterior_samples[:, theta_index] - theta_l\n"
         "theta = theta_l + lambda_value * delta_theta\n"
         "calc = MACELinear(model_path=mace_model_path, device=device, "
@@ -105,11 +104,96 @@ print(f"Prepared {{n_ams}} AMS directories for theta index {{theta_index}}, lamb
 '''
 
 
+def rebase_existing_runs_at_zero():
+    """Set existing theta-lambda folders to the zero-corrector reference."""
+    posterior = np.load(POSTERIOR_PATH)
+    indices_path = RESULTS_DIR / "theta_indices.npy"
+    if not indices_path.is_file():
+        raise SystemExit(f"Indices posterior introuvables: {indices_path}")
+    indices = np.load(indices_path)
+    if indices.ndim != 1 or len(indices) != DEFAULT_N_SAMPLES:
+        raise SystemExit(f"Il faut exactement {DEFAULT_N_SAMPLES} indices dans {indices_path}.")
+    if np.any(indices < 0) or np.any(indices >= posterior.shape[1]):
+        raise SystemExit("Un theta_index est hors limites pour le posterior.")
+
+    theta_l = np.zeros(posterior.shape[0], dtype=posterior.dtype)
+    directions = posterior[:, indices].T
+    np.save(RESULTS_DIR / "theta_l.npy", theta_l)
+    np.save(RESULTS_DIR / "directions.npy", directions)
+
+    lambdas_path = RESULTS_DIR / "lambdas.npy"
+    old_lambdas = np.load(lambdas_path) if lambdas_path.exists() else LAMBDAS
+    keep_lambda = np.isin(old_lambdas, LAMBDAS)
+    if not np.all(np.isin(LAMBDAS, old_lambdas)):
+        raise SystemExit(f"Impossible de retrouver toutes les valeurs {LAMBDAS} dans {old_lambdas}.")
+    for filename in ("probs.npy", "available.npy"):
+        array_path = RESULTS_DIR / filename
+        if not array_path.exists():
+            continue
+        values = np.load(array_path)
+        if values.ndim < 2 or values.shape[1] != len(old_lambdas):
+            raise SystemExit(
+                f"Forme inattendue pour {array_path}: {values.shape}; "
+                f"l'axe lambda devrait avoir {len(old_lambdas)} valeurs."
+            )
+        np.save(array_path, values[:, keep_lambda, ...])
+    np.save(lambdas_path, LAMBDAS)
+
+    run_files = list(ROOT.glob("sample_*/lambda_*/run_ams.py"))
+    run_files.extend(ROOT.glob("sample_*/lambda_*/ams_*/run_ams.py"))
+    for path in run_files:
+        text = path.read_text()
+        text = text.replace(
+            "../../../ams_runs_mp0a_", "../../../../ams_runs_mp0a_"
+        ).replace("../../../models/", "../../../../models/")
+        text = re.sub(
+            r"(?m)^\s*theta_l\s*=\s*np\.load\(.*w_corrector_mp0a\.npy[\"']\)\s*$",
+            "theta_l = np.zeros(posterior_samples.shape[0], dtype=posterior_samples.dtype)",
+            text,
+        )
+        text = re.sub(
+            r"(?m)^\s*theta_l = np\.zeros\(posterior_samples\.shape\[0\], dtype=posterior_samples\.dtype\)\s*$",
+            "theta_l = np.zeros(posterior_samples.shape[0], dtype=posterior_samples.dtype)",
+            text,
+        )
+        path.write_text(text)
+
+    make_files = list(ROOT.glob("sample_*/lambda_*/make_input_files.py"))
+    for path in make_files:
+        text = path.read_text()
+        text = text.replace(
+            "../../../ams_runs_mp0a_", "../../../../ams_runs_mp0a_"
+        ).replace("../../../models/", "../../../../models/")
+        path.write_text(text)
+
+    for pattern in (
+        "sample_*/lambda_*/job_topaze",
+        "sample_*/lambda_*/run_all_topaze",
+        "sample_*/lambda_*/ams_*/job_topaze",
+    ):
+        for path in ROOT.glob(pattern):
+            text = path.read_text().replace("#MSUB -q a100", "#MSUB -q milan", 1)
+            path.write_text(text)
+
+    print(f"Reference zero appliquee aux {len(run_files)} scripts run_ams.py.")
+    print(f"Directions recalculees pour les indices {', '.join(map(str, indices))}.")
+    print(f"Plage lambda active: {LAMBDAS[0]} a {LAMBDAS[-1]} ({len(LAMBDAS)} valeurs).")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int, default=None, help="seed for selecting posterior samples")
     parser.add_argument("--n-samples", type=int, default=DEFAULT_N_SAMPLES)
+    parser.add_argument(
+        "--rebase-zero-reference",
+        action="store_true",
+        help="update existing folders/results so theta_L is exactly zero",
+    )
     args = parser.parse_args()
+
+    if args.rebase_zero_reference:
+        rebase_existing_runs_at_zero()
+        return
 
     if args.n_samples != DEFAULT_N_SAMPLES:
         raise SystemExit(f"Ce protocole requiert exactement {DEFAULT_N_SAMPLES} samples.")
@@ -118,9 +202,9 @@ def main():
 
     require_base_files()
     posterior = np.load(POSTERIOR_PATH)
-    theta_l = np.load(THETA_L_PATH)
-    if posterior.ndim != 2 or posterior.shape[0] != theta_l.size:
-        raise SystemExit("posterior_samples et w_corrector ont des dimensions incompatibles.")
+    if posterior.ndim != 2:
+        raise SystemExit("posterior_samples doit etre un tableau 2D.")
+    theta_l = np.zeros(posterior.shape[0], dtype=posterior.dtype)
 
     rng = np.random.default_rng(args.seed)
     indices = np.sort(rng.choice(posterior.shape[1], size=DEFAULT_N_SAMPLES, replace=False))
@@ -143,8 +227,14 @@ def main():
         for lambda_value in LAMBDAS:
             lambda_dir = sample_dir / lambda_name(int(lambda_value))
             lambda_dir.mkdir()
-            for name in ("job", "job_topaze", "run_all_topaze", "compute_probs.py"):
+            for name in ("job", "compute_probs.py"):
                 shutil.copy2(BASE_RUN / name, lambda_dir / name)
+            job_topaze = (BASE_RUN / "job_topaze").read_text()
+            job_topaze = job_topaze.replace("#MSUB -q a100", "#MSUB -q milan", 1)
+            (lambda_dir / "job_topaze").write_text(job_topaze)
+            run_all = (BASE_RUN / "run_all_topaze").read_text()
+            run_all = run_all.replace("#MSUB -q a100", "#MSUB -q milan", 1)
+            (lambda_dir / "run_all_topaze").write_text(run_all)
             (lambda_dir / "run_ams.py").write_text(run_template)
             (lambda_dir / "make_input_files.py").write_text(
                 make_input_script(int(theta_index), int(lambda_value))

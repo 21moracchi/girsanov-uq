@@ -39,7 +39,9 @@ def main():
             params = json.loads(params_path.read_text())
             lambda_value = int(params["lambda"])
             if lambda_value not in lookup:
-                raise ValueError(f"Lambda inattendu dans {params_path}: {lambda_value}")
+                # Older experiments may still have lambda folders outside the
+                # active range; the Topaze submitter intentionally skips them.
+                continue
             collected[sample_id, lookup[lambda_value]] = numeric_values(results_path)
 
     if not collected:

@@ -13,7 +13,7 @@
 
 # Submit from scripts/AMS_butane/theta_lambda_mp0a with:
 #   ccc_msub submit_lambda_batches_topaze.sh
-# The 70 A100 AMS jobs of one (sample, lambda) point finish before the next
+# The 70 AMS jobs on Milan of one (sample, lambda) point finish before the next
 # point starts, so the initial-condition pool can safely be reused.
 
 set -euo pipefail
@@ -71,7 +71,10 @@ echo "Baseline queue: $baseline_jobs jobs"
 
 for sample_dir in "$ROOT_DIR"/sample_[0-9]*; do
     [ -d "$sample_dir" ] || continue
-    for lambda_dir in "$sample_dir"/lambda_*; do
+    for lambda_name in \
+        lambda_m05 lambda_m04 lambda_m03 lambda_m02 lambda_m01 \
+        lambda_p00 lambda_p01 lambda_p02 lambda_p03 lambda_p04 lambda_p05; do
+        lambda_dir="$sample_dir/$lambda_name"
         [ -d "$lambda_dir" ] || continue
         echo "=== ${lambda_dir#$ROOT_DIR/} ==="
         python "$CLEAN_SCRIPT"

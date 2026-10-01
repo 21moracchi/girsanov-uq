@@ -13,7 +13,7 @@
 
 # Submit from scripts/AMS_butane/theta_lambda_mp0a with:
 #   ccc_msub submit_lambda_batches_topaze.sh
-# The 70 AMS jobs on Milan of one (sample, lambda) point finish before the next
+# The 70 A100 AMS jobs of one (sample, lambda) point finish before the next
 # point starts, so the initial-condition pool can safely be reused.
 
 set -euo pipefail

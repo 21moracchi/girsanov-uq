@@ -168,12 +168,15 @@ def rebase_existing_runs_at_zero():
 
     for pattern in (
         "sample_*/lambda_*/job_topaze",
-        "sample_*/lambda_*/run_all_topaze",
         "sample_*/lambda_*/ams_*/job_topaze",
     ):
         for path in ROOT.glob(pattern):
-            text = path.read_text().replace("#MSUB -q a100", "#MSUB -q milan", 1)
+            text = path.read_text().replace("#MSUB -q milan", "#MSUB -q a100", 1)
             path.write_text(text)
+
+    for path in ROOT.glob("sample_*/lambda_*/run_all_topaze"):
+        text = path.read_text().replace("#MSUB -q a100", "#MSUB -q milan", 1)
+        path.write_text(text)
 
     print(f"Reference zero appliquee aux {len(run_files)} scripts run_ams.py.")
     print(f"Directions recalculees pour les indices {', '.join(map(str, indices))}.")
@@ -229,9 +232,7 @@ def main():
             lambda_dir.mkdir()
             for name in ("job", "compute_probs.py"):
                 shutil.copy2(BASE_RUN / name, lambda_dir / name)
-            job_topaze = (BASE_RUN / "job_topaze").read_text()
-            job_topaze = job_topaze.replace("#MSUB -q a100", "#MSUB -q milan", 1)
-            (lambda_dir / "job_topaze").write_text(job_topaze)
+            shutil.copy2(BASE_RUN / "job_topaze", lambda_dir / "job_topaze")
             run_all = (BASE_RUN / "run_all_topaze").read_text()
             run_all = run_all.replace("#MSUB -q a100", "#MSUB -q milan", 1)
             (lambda_dir / "run_all_topaze").write_text(run_all)

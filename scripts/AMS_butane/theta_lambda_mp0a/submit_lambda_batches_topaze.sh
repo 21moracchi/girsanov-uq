@@ -23,6 +23,24 @@ CLEAN_SCRIPT="${CLEAN_SCRIPT:-$ROOT_DIR/../clean_conds.py}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-300}"
 START_SLEEP_SECONDS="${START_SLEEP_SECONDS:-10}"
 START_TIMEOUT_SECONDS="${START_TIMEOUT_SECONDS:-1800}"
+EXPECTED_AMS_RUNS=70
+
+has_complete_results() {
+    local results_file="$1" n_values
+    [ -f "$results_file" ] || return 1
+    n_values="$(awk '
+        {
+            value = $0
+            gsub(/^[[:space:]]+/, "", value)
+            gsub(/[[:space:]]+$/, "", value)
+            if (value ~ /^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?$/) {
+                n++
+            }
+        }
+        END { print n + 0 }
+    ' "$results_file")"
+    [ "$n_values" -eq "$EXPECTED_AMS_RUNS" ]
+}
 
 job_count() {
     ccc_mstat -u "$USER" 2>/dev/null | awk '
@@ -76,7 +94,13 @@ for sample_dir in "$ROOT_DIR"/sample_[0-9]*; do
         lambda_p00 lambda_p01 lambda_p02 lambda_p03 lambda_p04 lambda_p05; do
         lambda_dir="$sample_dir/$lambda_name"
         [ -d "$lambda_dir" ] || continue
+        results_file="$lambda_dir/results_prob.txt"
+        if has_complete_results "$results_file"; then
+            echo "=== ${lambda_dir#$ROOT_DIR/}: deja termine ($EXPECTED_AMS_RUNS resultats), ignore ==="
+            continue
+        fi
         echo "=== ${lambda_dir#$ROOT_DIR/} ==="
+        echo "Resultats absents ou incomplets: lancement de ce point lambda."
         python "$CLEAN_SCRIPT"
         (cd "$lambda_dir" && python make_input_files.py)
         (cd "$lambda_dir" && ccc_msub run_all_topaze)

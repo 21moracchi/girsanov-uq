@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#MSUB -r submission_loop
+#MSUB -o logs/out_%I
+#MSUB -e logs/err_%I
+#MSUB -q milan
+#MSUB -Q normal
+#MSUB -N 1
+#MSUB -n 1
+#MSUB -c 1
+#MSUB -T 3600
+#MSUB -m scratch,work
+
+# Ensure the log directory exists
+mkdir -p logs
+
+# Loop over all matching replica directories
+for dir in FV_replica_*/ ; do
+    if [ -d "$dir" ]; then
+        echo "Entering directory: $dir"
+
+        # Enter the directory, submit the job, then return to the parent
+        # Note: replace 'job_ini' with the name of your compute script
+        (cd "$dir" && ccc_msub job_topaze)
+
+        # Scheduler delay
+        sleep 0.5
+    fi
+done
+
+echo "All submissions are complete."

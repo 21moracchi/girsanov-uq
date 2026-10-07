@@ -1,0 +1,7 @@
+#!/bin/sh
+
+
+## python env 
+# source $SCRATCH/girsams_env/bin/activate
+
+python build_design_matrix.py

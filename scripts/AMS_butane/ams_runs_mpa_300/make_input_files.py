@@ -19,6 +19,10 @@ for i in range(offset, offset + n_ams):
         text = f_in.read()
     text = text.replace('ams_seed = None', f'ams_seed = {ams_seeds[i - offset]}')
     text = text.replace('dyn_seed = None', f'dyn_seed = {dyn_seeds[i - offset]}')
+    text = text.replace(
+        'ams.set_ini_cond_dir("../sample_ini_conds/ini_conds")',
+        f'ams.set_ini_cond_dir("../sample_ini_conds/ini_conds/{i}")',
+    )
     with open(f'{dirname}/run_ams.py', 'wt') as f_out:
         f_out.write(text)
 

@@ -1,25 +1,46 @@
 """Restore initial-condition files marked as used by AMS runs."""
 
+import argparse
 from pathlib import Path
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent / "ams_runs_mp0a_500" / "sample_ini_conds" / "ini_conds"
+    parser = argparse.ArgumentParser(
+        description=(
+            "Restore AMS initial-condition files ending in '_used.extxyz' "
+            "recursively under the supplied directory."
+        )
+    )
+    parser.add_argument(
+        "path",
+        type=Path,
+        help="Parent directory whose subdirectories contain the initial conditions.",
+    )
+    root = parser.parse_args().path.expanduser().resolve()
     if not root.is_dir():
         raise FileNotFoundError(f"Initial-condition directory not found: {root}")
 
-    restored = 0
-    for path in root.rglob("*"):
-        if not path.is_file() or not path.stem.endswith("_used"):
-            continue
+    restores = [
+        (path, path.with_name(path.name.removesuffix("_used.extxyz") + ".extxyz"))
+        for path in root.rglob("*_used.extxyz")
+        if path.is_file()
+    ]
+    collisions = [
+        (source, destination)
+        for source, destination in restores
+        if destination.exists()
+    ]
+    if collisions:
+        details = "\n".join(
+            f"  {source} -> {destination} (destination already exists)"
+            for source, destination in collisions
+        )
+        raise FileExistsError(f"Refusing to overwrite existing files:\n{details}")
 
-        destination = path.with_name(path.stem[:-5] + path.suffix)
-        if destination.exists():
-            raise FileExistsError(f"Cannot restore {path.name}: {destination} already exists")
+    for path, destination in restores:
         path.rename(destination)
-        restored += 1
 
-    print(f"Restored {restored} initial-condition files in {root}.")
+    print(f"Restored {len(restores)} initial-condition files under {root}.")
 
 
 if __name__ == "__main__":

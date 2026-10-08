@@ -61,7 +61,7 @@ cv.set_p_crit(["below","above"])
 cv.set_in_p_boundary([np.radians(60),np.radians(290.0)])
 
 # number of initial conditions expected in the ini conds directory
-n_rep = 300
+n_rep = 100
 
 # Single AMS run per folder (one AMS is launched per prepared folder)
 # draw RNGs from provided seeds (make_input_files can write `ams_seed`/`dyn_seed` into run_ams.py)

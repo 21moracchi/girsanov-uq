@@ -17,9 +17,10 @@ t_r_sigma = np.array(t_r_sigma)
 t_sigma_r = np.array(t_sigma_r) 
 
 t_loop = (t_r_sigma + t_sigma_r) * 1.0  #in fempto seconds 
+print(f"Mean loop time: {np.mean(t_loop):.6g} fs")
 np.savetxt('t_loop.txt', t_loop)
 
 plt.figure()
 plt.hist(t_loop, 200)
 plt.show()
-plt.savefig('hist_t_loop.png', dpi=160) 
+plt.savefig('hist_t_loop.png', dpi=160)

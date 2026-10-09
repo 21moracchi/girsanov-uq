@@ -1,33 +1,32 @@
-import os
 import json
+import os
 import re
 import numpy as np
+
+
 def main():
-    root_dir = "."
     pattern = re.compile(r"^ams_\d+$")
     values = []
 
-    for root, dirs, files in os.walk(root_dir):
+    for root, dirs, files in os.walk("."):
+        dirs.sort()
         dirname = os.path.basename(root)
         if pattern.match(dirname):
             file_path = os.path.join(root, "ams_checkpoint.txt")
             if os.path.exists(file_path):
                 try:
-                    with open(file_path, 'r') as f:
+                    with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                        if "current_p" in data:
-                            values.append(float(data["current_p"]))
-                except (json.JSONDecodeError, ValueError, KeyError):
+                        current_p = data.get("current_p")
+                        if current_p is not None:
+                            values.append(float(current_p))
+                except (json.JSONDecodeError, TypeError, ValueError):
                     pass
 
-    if values:
-        mean_val = sum(values) / len(values)
-        std = np.std(np.array(values))/np.sqrt(len(values))
-        with open("results_prob.txt", "w") as out:
-            out.write("Values:\n")
-            for v in values:
-                out.write(f"{v}\n")
-            out.write(f"\nMean: {mean_val}, Std : {std}\n")
+    if not values:
+        raise RuntimeError("No valid current_p values found in ams_* checkpoints.")
+
+    np.savetxt("results_prob.txt", np.asarray(values, dtype=float))
 
 if __name__ == "__main__":
     main()

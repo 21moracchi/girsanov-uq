@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 PLOTS_DIR = Path(__file__).resolve().parent
 AMS_DIR = PLOTS_DIR.parent
-TEMPERATURES = (200, 300, 500)
+TEMPERATURES = (200, 300, 400, 500)
 MODELS = ("mp0a", "omat0")
 POSTERIOR_TEMPERATURE = 300
 OUTPUT_PATH = PLOTS_DIR / "probability_vs_temperature.png"
@@ -52,7 +52,9 @@ def probability_by_posterior_sample(model, temperature):
     aggregated_dir = run_dir / "reweighting" / "aggregated_results"
     probs = np.load(aggregated_dir / "final_probs.npy")
     scores = np.load(aggregated_dir / "final_scores.npy")
-    initial_descriptors = np.load(aggregated_dir / "ini_D.npy").mean(axis=1)
+    initial_descriptors = np.load(aggregated_dir / "ini_D.npy")
+    if initial_descriptors.ndim == 3:
+        initial_descriptors = initial_descriptors.mean(axis=1)
     posterior_path = (
         AMS_DIR
         / f"ams_runs_{model}_{POSTERIOR_TEMPERATURE}"

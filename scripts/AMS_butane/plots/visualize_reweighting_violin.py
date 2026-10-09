@@ -1,11 +1,15 @@
 # %%
+import argparse
+
 import numpy as np
 import matplotlib.pyplot as plt
 from girsanov_uq.utils.utils import compute_probability_violin
 
 
 models = [ 'omat0','mp0a']
-temperature = 200
+parser = argparse.ArgumentParser(description="Plot AMS reweighting UQ at one temperature.")
+parser.add_argument("temperature", nargs="?", type=int, default=200)
+temperature = parser.parse_args().temperature
 
 fig, axs = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 
@@ -15,7 +19,8 @@ for i, model in enumerate(models):
     ini_conds_D = np.load(f"../ams_runs_{model}_{temperature}/reweighting/aggregated_results/ini_D.npy")
     ref_probs = np.loadtxt(f'../ams_runs_mpa_{temperature}/results_prob.txt')
     posterior_samples = np.load(f"../ams_runs_{model}_300/pops/binary_data/posterior_samples_{model}.npy")
-    ini_conds_D = np.mean(ini_conds_D, axis=1)
+    if ini_conds_D.ndim == 3:
+        ini_conds_D = np.mean(ini_conds_D, axis=1)
     compute_probability_violin(
         scores[:],
         probs[:],

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+#MSUB -r ini_D_mp0a_500
+#MSUB -o logs/IniD_out%I
+#MSUB -e logs/IniD_err%I
+#MSUB -q a100
+#MSUB -Q normal
+#MSUB -N 1
+#MSUB -n 1
+#MSUB -c 32
+#MSUB -T 86400
+#MSUB -m work,scratch
+
+python compute_ini_D.py ${N_INI_CONDS:-100}

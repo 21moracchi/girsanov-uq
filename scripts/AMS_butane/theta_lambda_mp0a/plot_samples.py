@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parent
 RESULTS_DIR = ROOT / "results"
 REWEIGHTING_DIR = ROOT.parent / "ams_runs_mp0a_500/reweighting/aggregated_results"
 OUTPUT_PATH = ROOT / "reweighting_vs_lambda.png"
+SCATTER_OUTPUT_PATH = ROOT / "reweighting_vs_lambda_scatter.png"
 BOOTSTRAP_REPLICATES = 5000
 BOOTSTRAP_SEED = 20261006
 
@@ -243,6 +244,94 @@ def main():
         )
     fig.savefig(OUTPUT_PATH, dpi=300)
     print(f"Saved {OUTPUT_PATH}")
+
+    # Compare direct and reweighted estimates at every available lambda value.
+    direct_means = np.full(direct.shape[:2], np.nan)
+    direct_sems = np.zeros(direct.shape[:2])
+    for sample_id in range(direct.shape[0]):
+        direct_means[sample_id], direct_sems[sample_id] = mean_and_sem_by_lambda(
+            direct[sample_id]
+        )
+
+    available = (
+        np.isfinite(direct_means)
+        & (direct_means > 0)
+        & np.isfinite(reweighted)
+        & (reweighted > 0)
+        & np.isfinite(reweighted_2sigma_lower)
+        & np.isfinite(reweighted_2sigma_upper)
+    )
+    x = np.log10(direct_means[available])
+    y = np.log10(reweighted[available])
+    direct_lower = np.maximum(
+        direct_means - 1.96 * direct_sems,
+        np.finfo(float).tiny,
+    )
+    direct_upper = direct_means + 1.96 * direct_sems
+    x_error_lower = np.log10(direct_means[available]) - np.log10(direct_lower[available])
+    x_error_upper = np.log10(direct_upper[available]) - np.log10(direct_means[available])
+    y_error_lower = np.maximum(
+        0.0,
+        y - np.log10(reweighted_2sigma_lower[available]),
+    )
+    y_error_upper = np.maximum(
+        0.0,
+        np.log10(reweighted_2sigma_upper[available]) - y,
+    )
+
+    scatter_fig, scatter_ax = plt.subplots(figsize=(8, 6))
+    scatter_ax.errorbar(
+        x,
+        y,
+        xerr=np.vstack((x_error_lower, x_error_upper)),
+        yerr=np.vstack((y_error_lower, y_error_upper)),
+        fmt="none",
+        ecolor="gray",
+        alpha=0.55,
+        capsize=2,
+        zorder=1,
+    )
+    scatter_ax.scatter(x, y, s=35, label=r"Samples $\theta_i$", zorder=2)
+    log_p0 = np.log10(p0)
+    scatter_ax.scatter(
+        log_p0,
+        log_p0,
+        s=40,
+        color="tab:orange",
+        zorder=3,
+        label=r"Reference $\theta_\mathcal{L}$",
+    )
+
+    if len(x) >= 2:
+        slope, intercept = np.polyfit(x, y, 1)
+        x_fit = np.linspace(x.min(), x.max(), 100)
+        scatter_ax.plot(
+            x_fit,
+            slope * x_fit + intercept,
+            "g--",
+            lw=2,
+            label="Fit OLS",
+        )
+
+    scatter_extent = max(
+        np.max(np.abs(x - log_p0) + np.maximum(x_error_lower, x_error_upper)),
+        np.max(np.abs(y - log_p0) + np.maximum(y_error_lower, y_error_upper)),
+        0.05,
+    ) * 1.08
+    scatter_limits = (log_p0 - scatter_extent, log_p0 + scatter_extent)
+    scatter_ax.plot(scatter_limits, scatter_limits, "k--", lw=1.5, label=r"$y=x$")
+    scatter_ax.set_xlim(scatter_limits)
+    scatter_ax.set_ylim(scatter_limits)
+    scatter_ax.set_xlabel(
+        r"Direct log-probabilities $\log_{10}(\hat p_{\mathrm{AMS}}(\theta))$"
+    )
+    scatter_ax.set_ylabel(
+        r"Reweighted log-probabilities $\log_{10}(\hat p_C(\theta))$"
+    )
+    scatter_ax.legend()
+    scatter_fig.tight_layout()
+    scatter_fig.savefig(SCATTER_OUTPUT_PATH, dpi=300)
+    print(f"Saved {SCATTER_OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

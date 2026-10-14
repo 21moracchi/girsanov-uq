@@ -378,11 +378,13 @@ def plot_temperature_axes(axes):
 
 
 def plot_rate_temperature_axes(axes):
-    """Draw model rates with AMS uncertainty and fixed loop time."""
+    """Draw model rates with probability UQ and fixed, theta-independent flux."""
     rng = np.random.default_rng(RANDOM_SEED)
     reference_summaries = []
     uq_ams_only = {model: [] for model in MODELS}
+    uq_total = {model: [] for model in MODELS}
     coverage_ams_only = {model: [] for model in MODELS}
+    coverage_total = {model: [] for model in MODELS}
 
     for temperature in TEMPERATURES:
         reference_probabilities = load_reference_probabilities(temperature)
@@ -419,9 +421,20 @@ def plot_rate_temperature_axes(axes):
                 reference_band_fraction_in_uq(reference_summary, ams_summary)
             )
 
+            total_probability_draws = total_uq_draws(
+                posterior_probabilities, sigma, rng
+            )
+            total_rate_draws = total_probability_draws * model_flux
+            total_summary = interval_summary(total_rate_draws)
+            uq_total[model].append(total_summary)
+            coverage_total[model].append(
+                reference_band_fraction_in_uq(reference_summary, total_summary)
+            )
+
             print(
                 f"{model}, {temperature} K: k médian (AMS seul)="
-                f"{ams_summary[0]:.4e} s⁻¹"
+                f"{ams_summary[0]:.4e} s⁻¹, k médian (UQ totale)="
+                f"{total_summary[0]:.4e} s⁻¹"
             )
         print(
             f"MPA référence, {temperature} K: k médian="
@@ -432,38 +445,49 @@ def plot_rate_temperature_axes(axes):
     colors = {"mp0a": "tab:blue", "omat0": "tab:orange"}
     labels = {"mp0a": "MP-0a", "omat0": "OMAT-0"}
     markers = {"mp0a": "o", "omat0": "s"}
+    uq_columns = (
+        (uq_ams_only, coverage_ams_only, "AMS variance"),
+        (uq_total, coverage_total, "AMS variance + model UQ"),
+    )
     for row, model in enumerate(MODELS):
-        ax = axes[row]
-        envelope_violation = 1.0 - float(np.mean(coverage_ams_only[model]))
-        plot_summary(
-            ax,
-            TEMPERATURES,
-            uq_ams_only[model],
-            f"{labels[model]}, EV: {envelope_violation:.1%}",
-            "tab:blue",
-            markers[model],
-        )
-        plot_summary(
-            ax,
-            TEMPERATURES,
-            reference_summaries,
-            "MPA reference",
-            "black",
-            "D",
-        )
-        ax.set_title(f"{labels[model]}: AMS variance", fontsize=18)
-        ax.set_xticks(TEMPERATURES)
-        ax.set_yscale("log")
-        ax.grid(True, which="both", alpha=0.25)
-        ax.legend(fontsize=13)
+        for col, (summaries, coverage, uq_title) in enumerate(uq_columns):
+            ax = axes[row, col]
+            envelope_violation = 1.0 - float(np.mean(coverage[model]))
+            plot_summary(
+                ax,
+                TEMPERATURES,
+                summaries[model],
+                (
+                    f"{labels[model]}, EV: {envelope_violation:.1%}"
+                    if col == 0
+                    else f"{labels[model]} + UQ, EV: {envelope_violation:.1%}"
+                ),
+                "tab:blue" if col == 0 else "tab:green",
+                markers[model],
+            )
+            plot_summary(
+                ax,
+                TEMPERATURES,
+                reference_summaries,
+                "MPA reference",
+                "black",
+                "D",
+            )
+            ax.set_title(uq_title, fontsize=18)
+            ax.set_xticks(TEMPERATURES)
+            ax.set_yscale("log")
+            ax.grid(True, which="both", alpha=0.25)
+            ax.legend(fontsize=13)
 
-    for ax in axes[-1:]:
+    for ax in axes[-1, :]:
         ax.set_xlabel("Temperature [K]", fontsize=18)
-    for ax in axes:
+    for ax in axes[:, 0]:
         ax.set_ylabel(r"Rate $k$ [s$^{-1}$]", fontsize=13)
-    for ax in axes:
+    for ax in axes.flat:
         ax.tick_params(labelsize=12)
-    return reference_summaries, uq_ams_only
+    for ax in axes[:, 1]:
+        ax.tick_params(labelleft=False)
+    return reference_summaries, uq_ams_only, uq_total
 
 
 def main():
@@ -480,7 +504,7 @@ def main():
         plot_temperature_axes(axes)
         output_path = OUTPUT_PATH
     else:
-        fig, axes = plt.subplots(len(MODELS), 1, figsize=(7, 8), sharex=True, sharey=True)
+        fig, axes = plt.subplots(len(MODELS), 2, figsize=(11, 8), sharex=True, sharey=True)
         plot_rate_temperature_axes(axes)
         output_path = RATE_OUTPUT_PATH
     fig.tight_layout()

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import matplotlib
 import numpy as np
+import argparse
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -20,6 +21,7 @@ TEMPERATURES = (200, 300, 400, 500)
 MODELS = ("mp0a", "omat0")
 POSTERIOR_TEMPERATURE = 300
 OUTPUT_PATH = PLOTS_DIR / "probability_vs_temperature.png"
+RATE_OUTPUT_PATH = PLOTS_DIR / "k_vs_temperature.png"
 N_TOTAL_DRAWS = 100_000
 N_AMS_BOOTSTRAP_DRAWS = 5_000
 BOOTSTRAP_BATCH_SIZE = 250
@@ -40,6 +42,36 @@ def load_reference_probabilities(temperature):
     if values.size == 0 or np.any(values <= 0):
         raise ValueError(f"Probabilités de référence invalides dans {path}")
     return values
+
+
+def load_loop_times(model, temperature):
+    """Read positive AMS loop times in femtoseconds."""
+    path = AMS_DIR / f"ams_runs_{model}_{temperature}" / "t_loop.txt"
+    if not path.exists():
+        raise FileNotFoundError(f"Temps de boucle AMS absents : {path}")
+    values = np.atleast_1d(np.loadtxt(path, dtype=float))
+    values = values[np.isfinite(values) & (values > 0)]
+    if values.size < 2:
+        raise ValueError(f"Pas assez de temps de boucle positifs dans {path}")
+    return values
+
+
+def positive_lognormal_draws(mean, std, rng, n_draws):
+    """Draw positive values from a lognormal distribution with given moments."""
+    mean = max(float(mean), np.finfo(float).tiny)
+    log_variance = np.log1p((float(std) / mean) ** 2)
+    log_sigma = np.sqrt(log_variance)
+    log_mean = np.log(mean) - 0.5 * log_variance
+    return rng.lognormal(log_mean, log_sigma, size=n_draws)
+
+
+def flux_draws(loop_times, rng, n_draws):
+    """Draw AMS fluxes phi=1/mean(t_loop), converting fs to seconds."""
+    mean_loop = float(np.mean(loop_times))
+    sem_loop = float(np.std(loop_times, ddof=1) / np.sqrt(loop_times.size))
+    mean_flux = 1.0 / (mean_loop * 1e-15)
+    std_flux = sem_loop / (mean_loop**2 * 1e-15)
+    return positive_lognormal_draws(mean_flux, std_flux, rng, n_draws)
 
 
 def probability_by_posterior_sample(model, temperature):
@@ -349,13 +381,145 @@ def plot_temperature_axes(axes):
     return reference_summaries, uq_ams_only, uq_total
 
 
+def plot_rate_temperature_axes(axes):
+    """Draw the 2x2 rate comparison, including uncertainty in loop time."""
+    rng = np.random.default_rng(RANDOM_SEED)
+    reference_summaries = []
+    uq_ams_only = {model: [] for model in MODELS}
+    uq_total = {model: [] for model in MODELS}
+    coverage_ams_only = {model: [] for model in MODELS}
+    coverage_total = {model: [] for model in MODELS}
+
+    for temperature in TEMPERATURES:
+        reference_probabilities = load_reference_probabilities(temperature)
+        reference_sem = (
+            np.std(reference_probabilities, ddof=1) / np.sqrt(reference_probabilities.size)
+            if reference_probabilities.size > 1
+            else 0.0
+        )
+        reference_probability_draws = positive_lognormal_draws(
+            np.mean(reference_probabilities),
+            reference_sem,
+            rng,
+            N_TOTAL_DRAWS,
+        )
+        reference_flux = flux_draws(
+            load_loop_times("mpa", temperature), rng, N_TOTAL_DRAWS
+        )
+        reference_rate_draws = reference_probability_draws * reference_flux
+        reference_summary = interval_summary(reference_rate_draws)
+        reference_summaries.append(reference_summary)
+
+        for model in MODELS:
+            posterior_probabilities, sigma, probs, weighted_scores, normalizer = (
+                probability_by_posterior_sample(model, temperature)
+            )
+            model_loop_times = load_loop_times(model, temperature)
+
+            ams_probability_draws = ams_only_bootstrap_draws(
+                probs, weighted_scores, normalizer, rng
+            )
+            ams_rate_draws = ams_probability_draws * flux_draws(
+                model_loop_times, rng, ams_probability_draws.size
+            )
+            ams_summary = interval_summary(ams_rate_draws)
+            uq_ams_only[model].append(ams_summary)
+            coverage_ams_only[model].append(
+                reference_band_fraction_in_uq(reference_summary, ams_summary)
+            )
+
+            total_probability_draws = total_uq_draws(
+                posterior_probabilities, sigma, rng
+            )
+            total_rate_draws = total_probability_draws * flux_draws(
+                model_loop_times, rng, total_probability_draws.size
+            )
+            total_summary = interval_summary(total_rate_draws)
+            uq_total[model].append(total_summary)
+            coverage_total[model].append(
+                reference_band_fraction_in_uq(reference_summary, total_summary)
+            )
+
+            print(
+                f"{model}, {temperature} K: k médian (AMS seul)="
+                f"{ams_summary[0]:.4e} s⁻¹, k médian (UQ totale)="
+                f"{total_summary[0]:.4e} s⁻¹"
+            )
+        print(
+            f"MPA référence, {temperature} K: k médian="
+            f"{reference_summary[0]:.4e} s⁻¹ (IC95 "
+            f"[{reference_summary[1]:.4e}, {reference_summary[2]:.4e}])"
+        )
+
+    colors = {"mp0a": "tab:blue", "omat0": "tab:orange"}
+    labels = {"mp0a": "MP-0a", "omat0": "OMAT-0"}
+    markers = {"mp0a": "o", "omat0": "s"}
+    uq_columns = (
+        (uq_ams_only, coverage_ams_only, "AMS variance"),
+        (uq_total, coverage_total, "AMS variance + model UQ"),
+    )
+
+    for row, model in enumerate(MODELS):
+        for col, (model_summaries, model_coverage, uq_title) in enumerate(uq_columns):
+            ax = axes[row, col]
+            envelope_violation = 1.0 - float(np.mean(model_coverage[model]))
+            plot_summary(
+                ax,
+                TEMPERATURES,
+                model_summaries[model],
+                (
+                    f"{labels[model]}, EV: {envelope_violation:.1%}"
+                    if col == 0
+                    else f"{labels[model]} + UQ, EV: {envelope_violation:.1%}"
+                ),
+                "tab:blue" if col == 0 else "tab:green",
+                markers[model],
+            )
+            plot_summary(
+                ax,
+                TEMPERATURES,
+                reference_summaries,
+                "MPA reference",
+                "black",
+                "D",
+            )
+            ax.set_title(uq_title, fontsize=18)
+            ax.set_xticks(TEMPERATURES)
+            ax.set_yscale("log")
+            ax.grid(True, which="both", alpha=0.25)
+            ax.legend(fontsize=13)
+
+    for ax in axes[-1, :]:
+        ax.set_xlabel("Temperature [K]", fontsize=18)
+    for ax in axes[:, 0]:
+        ax.set_ylabel(r"Rate $k$ [s$^{-1}$]", fontsize=13)
+    for ax in axes.flat:
+        ax.tick_params(labelsize=12)
+    for ax in axes[:, 1]:
+        ax.tick_params(labelleft=False)
+    return reference_summaries, uq_ams_only, uq_total
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Plot probability or rate versus temperature.")
+    parser.add_argument(
+        "--quantity",
+        choices=("probability", "rate"),
+        default="probability",
+        help="Plot rare event probability (default) or rate k.",
+    )
+    quantity = parser.parse_args().quantity
     fig, axes = plt.subplots(len(MODELS), 2, figsize=(11, 8), sharex=True, sharey=True)
-    plot_temperature_axes(axes)
+    if quantity == "probability":
+        plot_temperature_axes(axes)
+        output_path = OUTPUT_PATH
+    else:
+        plot_rate_temperature_axes(axes)
+        output_path = RATE_OUTPUT_PATH
     fig.tight_layout()
-    fig.savefig(OUTPUT_PATH, dpi=300)
+    fig.savefig(output_path, dpi=300)
     plt.close(fig)
-    print(f"Figure enregistrée : {OUTPUT_PATH}")
+    print(f"Figure enregistrée : {output_path}")
 
 
 if __name__ == "__main__":

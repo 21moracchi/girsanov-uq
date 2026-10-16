@@ -463,7 +463,7 @@ vertical_grid = fig.add_gridspec(
     left=0.12,
     right=0.98,
     bottom=0.045,
-    top=0.985,
+    top=0.95,
     wspace=0.36,
     hspace=0.32,
 )
@@ -490,7 +490,7 @@ for col, model_name in enumerate(('MP-0a', 'OMAT-0')):
     column_box = vertical_grid[0, col].get_position(fig)
     fig.text(
         (column_box.x0 + column_box.x1) / 2,
-        0.995,
+        0.99,
         model_name,
         ha='center',
         va='top',

@@ -522,11 +522,12 @@ for ax, label in panel_labels.items():
     )
 
 vertical_font_size = 14
+vertical_title_size = 18
 vertical_font_family = 'DejaVu Sans'
 plt.rcParams['font.family'] = vertical_font_family
 plt.rcParams['mathtext.fontset'] = 'dejavusans'
 for ax in vertical_axes:
-    ax.title.set_fontsize(vertical_font_size)
+    ax.title.set_fontsize(vertical_title_size)
     ax.title.set_fontfamily(vertical_font_family)
     for label in (ax.xaxis.label, ax.yaxis.label):
         label.set_fontsize(vertical_font_size)
@@ -548,7 +549,7 @@ for ax in vertical_axes:
             label.set_fontfamily(vertical_font_family)
 
 for label in fig.texts:
-    label.set_fontsize(vertical_font_size)
+    label.set_fontsize(vertical_title_size)
     label.set_fontfamily(vertical_font_family)
 
 fig.savefig(

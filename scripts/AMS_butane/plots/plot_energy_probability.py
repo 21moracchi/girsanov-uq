@@ -455,4 +455,32 @@ fig.savefig(
     dpi=300,
     bbox_inches='tight',
 )
+
+# Save the same panels in a portrait layout for documents with a vertical page.
+vertical_grid = fig.add_gridspec(
+    4,
+    2,
+    left=0.12,
+    right=0.98,
+    bottom=0.045,
+    top=0.985,
+    wspace=0.36,
+    hspace=0.42,
+)
+vertical_axes = [
+    axes[0, 0], axes[0, 1],
+    axes[1, 0], axes[1, 1],
+    temperature_axes[0, 0], temperature_axes[0, 1],
+    temperature_axes[1, 0], temperature_axes[1, 1],
+]
+fig.set_size_inches(14, 20)
+for panel_index, ax in enumerate(vertical_axes):
+    ax.set_axes_locator(None)
+    ax.set_position(vertical_grid[panel_index // 2, panel_index % 2].get_position(fig))
+
+fig.savefig(
+    os.path.join(output_dir, 'energy_probability_all_temperatures_vertical.png'),
+    dpi=300,
+    bbox_inches='tight',
+)
 plt.show()

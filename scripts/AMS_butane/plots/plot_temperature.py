@@ -17,11 +17,12 @@ import matplotlib.pyplot as plt
 
 PLOTS_DIR = Path(__file__).resolve().parent
 AMS_DIR = PLOTS_DIR.parent
+GENERAL_DIR = PLOTS_DIR / "general"
 TEMPERATURES = (200, 300, 400, 500)
 MODELS = ("mp0a", "omat0")
 POSTERIOR_TEMPERATURE = 300
-OUTPUT_PATH = PLOTS_DIR / "probability_vs_temperature.png"
-RATE_OUTPUT_PATH = PLOTS_DIR / "k_vs_temperature.png"
+OUTPUT_PATH = GENERAL_DIR / "probability_vs_temperature.png"
+RATE_OUTPUT_PATH = GENERAL_DIR / "k_vs_temperature.png"
 N_TOTAL_DRAWS = 100_000
 N_AMS_BOOTSTRAP_DRAWS = 5_000
 BOOTSTRAP_BATCH_SIZE = 250
@@ -491,6 +492,7 @@ def plot_rate_temperature_axes(axes):
 
 
 def main():
+    GENERAL_DIR.mkdir(exist_ok=True)
     parser = argparse.ArgumentParser(description="Plot probability or rate versus temperature.")
     parser.add_argument(
         "--quantity",

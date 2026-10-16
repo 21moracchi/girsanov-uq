@@ -98,7 +98,9 @@ def main():
     
     fig.tight_layout()
 
-    output_path = Path(__file__).with_name("L_three_cases.png")
+    output_dir = Path(__file__).resolve().parent / "general"
+    output_dir.mkdir(exist_ok=True)
+    output_path = output_dir / "L_three_cases.png"
     fig.savefig(output_path, dpi=200)
     print(f"Saved {output_path}")
     if matplotlib.get_backend().lower() != "agg":

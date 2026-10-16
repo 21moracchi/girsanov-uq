@@ -1,6 +1,7 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 from girsanov_uq.utils.utils import compute_log_rate_violin
 
 
@@ -37,4 +38,6 @@ axs[0].text(-0.1, 1.05, '(a)', transform=axs[0].transAxes, fontsize=18, fontweig
 axs[1].text(-0.1, 1.05, '(b)', transform=axs[1].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
 
 fig.tight_layout()
-fig.savefig(f'uq_{temperature}_violin_k_log.png', dpi=300)
+output_dir = Path(f'{temperature}K')
+output_dir.mkdir(exist_ok=True)
+fig.savefig(output_dir / f'uq_{temperature}_violin_k_log.png', dpi=300)

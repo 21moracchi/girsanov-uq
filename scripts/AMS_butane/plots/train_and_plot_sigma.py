@@ -3,6 +3,7 @@ from popsregression import POPSRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
 import os
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 use_forces = True
@@ -386,7 +387,9 @@ axes[0, 0].text(-0.1, 1.05, '(a)', transform=axes[0, 0].transAxes, fontsize=18, 
 axes[0,1].text(-0.1, 1.05, '(b)', transform=axes[0, 1].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
 axes[1, 0].text(-0.1, 1.05, '(c)', transform=axes[1, 0].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
 axes[1, 1].text(-0.1, 1.05, '(d)', transform=axes[1, 1].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
-plt.savefig('uq_pointwise_total_energy_2x2.png', dpi=300)
+general_dir = Path(__file__).resolve().parent / 'general'
+general_dir.mkdir(exist_ok=True)
+plt.savefig(general_dir / 'uq_pointwise_total_energy_2x2.png', dpi=300)
 
 plt.show()
 
@@ -456,5 +459,5 @@ if use_forces:
     axes[1, 0].set_title(row_titles[1])
     share_histogram_ylim(axes[:, 0])
     plt.tight_layout()
-    plt.savefig('uq_pointwise_total_forces_2x2.png', dpi=300)
+    plt.savefig(general_dir / 'uq_pointwise_total_forces_2x2.png', dpi=300)
     plt.show()

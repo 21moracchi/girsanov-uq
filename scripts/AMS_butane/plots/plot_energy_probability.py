@@ -481,6 +481,8 @@ for panel_index, ax in enumerate(vertical_axes):
 # Use column headers for the models, and number panels in row order.
 axes[0, 0].set_title('')
 axes[1, 0].set_title('')
+axes[0, 0].set_ylabel('')
+axes[1, 0].set_ylabel('')
 for ax in [*axes.flat, *temperature_axes.flat]:
     for annotation in list(ax.texts):
         if annotation.get_text() in {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}:

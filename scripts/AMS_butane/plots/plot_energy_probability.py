@@ -521,6 +521,36 @@ for ax, label in panel_labels.items():
         fontsize=18, fontweight='bold', va='top', ha='right',
     )
 
+vertical_font_size = 14
+vertical_font_family = 'DejaVu Sans'
+plt.rcParams['font.family'] = vertical_font_family
+plt.rcParams['mathtext.fontset'] = 'dejavusans'
+for ax in vertical_axes:
+    ax.title.set_fontsize(vertical_font_size)
+    ax.title.set_fontfamily(vertical_font_family)
+    for label in (ax.xaxis.label, ax.yaxis.label):
+        label.set_fontsize(vertical_font_size)
+        label.set_fontfamily(vertical_font_family)
+    ax.tick_params(axis='both', labelsize=vertical_font_size)
+    for label in [*ax.get_xticklabels(), *ax.get_yticklabels()]:
+        label.set_fontsize(vertical_font_size)
+        label.set_fontfamily(vertical_font_family)
+    for offset in (ax.xaxis.get_offset_text(), ax.yaxis.get_offset_text()):
+        offset.set_fontsize(vertical_font_size)
+        offset.set_fontfamily(vertical_font_family)
+    for annotation in ax.texts:
+        annotation.set_fontsize(vertical_font_size)
+        annotation.set_fontfamily(vertical_font_family)
+    legend = ax.get_legend()
+    if legend is not None:
+        for label in legend.get_texts():
+            label.set_fontsize(vertical_font_size)
+            label.set_fontfamily(vertical_font_family)
+
+for label in fig.texts:
+    label.set_fontsize(vertical_font_size)
+    label.set_fontfamily(vertical_font_family)
+
 fig.savefig(
     os.path.join(output_dir, 'energy_probability_all_temperatures_vertical.png'),
     dpi=300,

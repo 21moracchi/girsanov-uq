@@ -486,7 +486,7 @@ for model_row in range(2):
         r'Rare Event Sampling at $\theta_\ell$', fontsize=15
     )
     temperature_axes[model_row, 1].set_title(
-        r'Propagated Law under $\theta \sim \pi_{POPS}$', fontsize=15
+        r'Uncertainty Propagation ($\theta\sim\pi_{\mathrm{POPS}}$)', fontsize=15
     )
 
 for ax in temperature_axes.flat:

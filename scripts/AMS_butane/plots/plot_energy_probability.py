@@ -481,6 +481,14 @@ for panel_index, ax in enumerate(vertical_axes):
     ax.set_position(vertical_grid[panel_index // 2, panel_index % 2].get_position(fig))
 
 # Use column headers for the models, and number panels in row order.
+for model_row in range(2):
+    temperature_axes[model_row, 0].set_title(
+        r'Rare Event Sampling at $\theta_\ell$', fontsize=15
+    )
+    temperature_axes[model_row, 1].set_title(
+        r'Propagated Law under $\theta \sim \pi_{POPS}$', fontsize=15
+    )
+
 for ax in temperature_axes.flat:
     ax.tick_params(axis='x', labelbottom=True)
     ax.set_xlabel('Temperature [K]')

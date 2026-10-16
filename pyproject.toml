@@ -13,6 +13,7 @@ dependencies = [
     "scikit-learn",
     "mace-torch",
     "popsregression",
+    "seaborn>=0.13",
 ]
 
 [tool.setuptools]

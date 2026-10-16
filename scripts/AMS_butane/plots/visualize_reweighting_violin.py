@@ -10,7 +10,9 @@ from girsanov_uq.utils.utils import compute_probability_violin
 models = [ 'omat0','mp0a']
 parser = argparse.ArgumentParser(description="Plot AMS reweighting UQ at one temperature.")
 parser.add_argument("temperature", nargs="?", type=int, default=200)
-temperature = parser.parse_args().temperature
+parser.add_argument("--style", choices=("violin", "raincloud"), default="violin")
+args = parser.parse_args()
+temperature = args.temperature
 
 fig, axs = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 
@@ -35,7 +37,9 @@ for i, model in enumerate(models):
         n_samples=10000,
         n_theta_plot=10,
         rng=42 + i,
-        initial_descriptors=ini_conds_D, beta = 1.0 / (temperature * 0.0019872041)
+        initial_descriptors=ini_conds_D,
+        beta=1.0 / (temperature * 0.0019872041),
+        plot_style=args.style,
     )
 
 axs[0].set_title('OMAT-0')
@@ -46,5 +50,7 @@ axs[1].text(-0.1, 1.05, '(b)', transform=axs[1].transAxes, fontsize=18, fontweig
 
 fig.tight_layout()
 output_dir = Path(f'{temperature}K')
-output_dir.mkdir(exist_ok=True)
-fig.savefig(output_dir / f'uq_{temperature}_violin.png', dpi=300)
+if args.style == "raincloud":
+    output_dir /= "raincloud"
+output_dir.mkdir(parents=True, exist_ok=True)
+fig.savefig(output_dir / f'uq_{temperature}_{args.style}.png', dpi=300)

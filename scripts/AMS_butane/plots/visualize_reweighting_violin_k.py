@@ -1,4 +1,6 @@
 # %%
+import argparse
+
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -6,7 +8,11 @@ from girsanov_uq.utils.utils import compute_log_rate_violin
 
 
 models = ['omat0', 'mp0a']
-temperature = 300
+parser = argparse.ArgumentParser(description="Plot AMS log-rate uncertainty at one temperature.")
+parser.add_argument("temperature", nargs="?", type=int, default=300)
+parser.add_argument("--style", choices=("violin", "raincloud"), default="violin")
+args = parser.parse_args()
+temperature = args.temperature
 
 fig, axs = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
 
@@ -29,6 +35,7 @@ for i, model in enumerate(models):
         n_samples=10000,
         n_theta_plot=10,
         rng=42 + i,
+        plot_style=args.style,
     )
 
 axs[0].set_title('OMAT-0')
@@ -39,5 +46,7 @@ axs[1].text(-0.1, 1.05, '(b)', transform=axs[1].transAxes, fontsize=18, fontweig
 
 fig.tight_layout()
 output_dir = Path(f'{temperature}K')
-output_dir.mkdir(exist_ok=True)
-fig.savefig(output_dir / f'uq_{temperature}_violin_k_log.png', dpi=300)
+if args.style == "raincloud":
+    output_dir /= "raincloud"
+output_dir.mkdir(parents=True, exist_ok=True)
+fig.savefig(output_dir / f'uq_{temperature}_{args.style}_k_log.png', dpi=300)

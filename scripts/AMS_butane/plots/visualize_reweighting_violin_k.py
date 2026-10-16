@@ -22,7 +22,7 @@ for i, model in enumerate(models):
     ref_probs = np.loadtxt(f"../ams_runs_mpa_{temperature}/results_prob.txt")
     loop_times = np.loadtxt(f"../ams_runs_{model}_{temperature}/t_loop.txt")
     ref_loop_times = np.loadtxt(f"../ams_runs_{model}_{temperature}/t_loop.txt")
-    posterior_samples = np.load(f"../ams_runs_{model}_{temperature}/pops/binary_data/posterior_samples_{model}.npy")
+    posterior_samples = np.load(f"../ams_runs_{model}_300/pops/binary_data/posterior_samples_{model}.npy")
 
     compute_log_rate_violin(
         scores[:],
@@ -49,4 +49,4 @@ output_dir = Path(f'{temperature}K')
 if args.style == "raincloud":
     output_dir /= "raincloud"
 output_dir.mkdir(parents=True, exist_ok=True)
-fig.savefig(output_dir / f'uq_{temperature}_{args.style}_k_log.png', dpi=300)
+fig.savefig(output_dir / f'uq_{temperature}_{args.style}_k_log.png', dpi=300, bbox_inches='tight')

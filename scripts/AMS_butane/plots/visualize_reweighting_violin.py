@@ -53,4 +53,4 @@ output_dir = Path(f'{temperature}K')
 if args.style == "raincloud":
     output_dir /= "raincloud"
 output_dir.mkdir(parents=True, exist_ok=True)
-fig.savefig(output_dir / f'uq_{temperature}_{args.style}.png', dpi=300)
+fig.savefig(output_dir / f'uq_{temperature}_{args.style}.png', dpi=300, bbox_inches='tight')

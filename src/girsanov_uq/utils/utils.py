@@ -92,7 +92,7 @@ def _draw_raincloud(ax, sample_groups, labels, colors):
     positions = np.arange(len(labels))
     ax.set_yticks(positions, labels=labels)
     ax.set_ylabel("")
-    ax.tick_params(axis="y", labelsize=12)
+    ax.tick_params(axis="y", labelsize=15)
     ax.set_ylim(len(labels) - 0.5, -0.5)
 
 
@@ -882,36 +882,6 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
     else:
         raise ValueError("prior_dist must be 'normal', 'lognormal', or 'beta'")
 
-    theta_plot_samples = []
-    if plot_style == 'violin':
-        if theta_plot_indices is None:
-            theta_plot_indices = rng.choice(
-                len(p_theta),
-                size=min(n_theta_plot, len(p_theta)),
-                replace=False
-            )
-
-        for idx in theta_plot_indices:
-            if prior_dist == 'normal':
-                samples_theta = rng.normal(
-                    loc=p_theta[idx],
-                    scale=sigma_theta[idx],
-                    size=n_samples
-                )
-            elif prior_dist == 'lognormal':
-                samples_theta = rng.lognormal(
-                    mean=np.log(scale_ln[idx]),
-                    sigma=s_ln[idx],
-                    size=n_samples
-                )
-            elif prior_dist == 'beta':
-                samples_theta = rng.beta(
-                    alpha_param[idx],
-                    beta_param[idx],
-                    size=n_samples
-                )
-            theta_plot_samples.append(np.clip(samples_theta, eps, 1.0 - eps))
-
     model_samples = rng.normal(mean_prob, sigma_model, size=n_samples)
     sample_groups = [rho_pi_samples, model_samples]
     labels = [
@@ -933,7 +903,6 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
 
     if use_Ahat:
         sample_groups = [-np.log10(samples) for samples in sample_groups]
-        theta_plot_samples = [-np.log10(samples) for samples in theta_plot_samples]
         xlabel = r'$-\log_{10}(\hat p)$'
     else:
         xlabel = r'$p = p_{A \to B}(\partial A)$'
@@ -961,21 +930,6 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
             body.set_edgecolor(color)
             body.set_alpha(0.35)
 
-        theta_position = len(sample_groups) + 1
-        theta_violins = ax.violinplot(
-            theta_plot_samples,
-            positions=np.full(len(theta_plot_samples), theta_position, dtype=float),
-            vert=False,
-            showmeans=False,
-            showmedians=False,
-            showextrema=False
-        )
-
-        for body in theta_violins['bodies']:
-            body.set_facecolor('gray')
-            body.set_edgecolor('gray')
-            body.set_alpha(0.1)
-
         violins['cmedians'].set_color('black')
         violins['cmedians'].set_linewidth(1.5)
 
@@ -988,9 +942,8 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
             ax.hlines(position, q25, q75, color=color, lw=4.0, alpha=0.9)
             ax.plot(q50, position, marker='o', color='black', markersize=4)
 
-        ax.set_yticks(np.r_[theta_position, positions])
-        ax.set_yticklabels([r'Samples $\mathbf{P}(\hat p \mid \theta_i )$'] + labels)
-        ax.tick_params(axis='y', labelsize=12)
+        ax.set_yticks(positions, labels=labels)
+        ax.tick_params(axis='y', labelsize=15)
     ax.set_xlabel(xlabel)
     ax.grid(True, axis='x', linestyle=':', alpha=0.6)
 
@@ -1113,23 +1066,6 @@ def compute_log_rate_violin(scores, model_probs, loop_times, thetas_sample,
         labels.append(r'Reference')
         colors.append("black")
 
-    theta_plot_samples = []
-    if plot_style == 'violin':
-        if theta_plot_indices is None:
-            theta_plot_indices = rng.choice(
-                len(p_theta),
-                size=min(n_theta_plot, len(p_theta)),
-                replace=False,
-            )
-
-        theta_plot_samples = [
-            np.log10(
-                flux_samples
-                * _draw_lognormal(p_theta[idx], sigma_theta[idx], rng, n_samples, eps=eps)
-            )
-            for idx in theta_plot_indices
-        ]
-
     if ax is None:
         fig, ax = plt.subplots(figsize=(10, 4))
     else:
@@ -1153,21 +1089,6 @@ def compute_log_rate_violin(scores, model_probs, loop_times, thetas_sample,
             body.set_edgecolor(color)
             body.set_alpha(0.35)
 
-        theta_position = len(sample_groups) + 1
-        theta_violins = ax.violinplot(
-            theta_plot_samples,
-            positions=np.full(len(theta_plot_samples), theta_position, dtype=float),
-            vert=False,
-            showmeans=False,
-            showmedians=False,
-            showextrema=False,
-        )
-
-        for body in theta_violins['bodies']:
-            body.set_facecolor('gray')
-            body.set_edgecolor('gray')
-            body.set_alpha(0.1)
-
         violins['cmedians'].set_color('black')
         violins['cmedians'].set_linewidth(1.5)
 
@@ -1180,8 +1101,8 @@ def compute_log_rate_violin(scores, model_probs, loop_times, thetas_sample,
             ax.hlines(position, q25, q75, color=color, lw=4.0, alpha=0.9)
             ax.plot(q50, position, marker='o', color='black', markersize=4)
 
-        ax.set_yticks(np.r_[theta_position, positions])
-        ax.set_yticklabels([r'Samples $\theta_i \sim \pi$'] + labels)
+        ax.set_yticks(positions, labels=labels)
+        ax.tick_params(axis='y', labelsize=15)
     ax.set_xlabel(r'$\log_{10}(k_{AB}) \ (\mathrm{s}^{-1})$')
     ax.grid(True, axis='x', linestyle=':', alpha=0.6)
 

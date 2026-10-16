@@ -453,5 +453,6 @@ os.makedirs(output_dir, exist_ok=True)
 fig.savefig(
     os.path.join(output_dir, 'energy_probability_all_temperatures.png'),
     dpi=300,
+    bbox_inches='tight',
 )
 plt.show()

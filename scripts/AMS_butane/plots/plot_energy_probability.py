@@ -457,23 +457,25 @@ fig.savefig(
 )
 
 # Save the same panels in a portrait layout, grouped by model columns.
+# The two energy-error histograms remain in the landscape version only.
+fig.delaxes(axes[1, 0])
+fig.delaxes(axes[0, 0])
 vertical_grid = fig.add_gridspec(
-    4,
+    3,
     2,
     left=0.12,
     right=0.98,
     bottom=0.045,
     top=0.95,
     wspace=0.36,
-    hspace=0.32,
+    hspace=0.3,
 )
 vertical_axes = [
-    axes[1, 0], axes[0, 0],
     axes[1, 1], axes[0, 1],
     temperature_axes[0, 0], temperature_axes[1, 0],
     temperature_axes[0, 1], temperature_axes[1, 1],
 ]
-fig.set_size_inches(14, 19)
+fig.set_size_inches(14, 15.5)
 for panel_index, ax in enumerate(vertical_axes):
     ax.set_axes_locator(None)
     ax.set_position(vertical_grid[panel_index // 2, panel_index % 2].get_position(fig))
@@ -483,11 +485,7 @@ for ax in temperature_axes.flat:
     ax.tick_params(axis='x', labelbottom=True)
     ax.set_xlabel('Temperature [K]')
 
-axes[0, 0].set_title('')
-axes[1, 0].set_title('')
-axes[0, 0].set_ylabel('')
-axes[1, 0].set_ylabel('')
-for ax in [*axes.flat, *temperature_axes.flat]:
+for ax in fig.axes:
     for annotation in list(ax.texts):
         if annotation.get_text() in {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}:
             annotation.remove()
@@ -505,10 +503,9 @@ for col, model_name in enumerate(('MP-0a', 'OMAT-0')):
     )
 
 panel_labels = {
-    axes[1, 0]: '(a)', axes[0, 0]: '(b)',
-    axes[1, 1]: '(c)', axes[0, 1]: '(d)',
-    temperature_axes[0, 0]: '(e)', temperature_axes[1, 0]: '(f)',
-    temperature_axes[0, 1]: '(g)', temperature_axes[1, 1]: '(h)',
+    axes[1, 1]: '(a)', axes[0, 1]: '(b)',
+    temperature_axes[0, 0]: '(c)', temperature_axes[1, 0]: '(d)',
+    temperature_axes[0, 1]: '(e)', temperature_axes[1, 1]: '(f)',
 }
 for ax, label in panel_labels.items():
     ax.text(

@@ -45,10 +45,10 @@ for i, model in enumerate(models):
 axs[0].set_title('OMAT-0')
 axs[1].set_title('MP-0a')
 axs[0].set_xlabel('')
-axs[0].text(-0.1, 1.05, '(a)', transform=axs[0].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
-axs[1].text(-0.1, 1.05, '(b)', transform=axs[1].transAxes, fontsize=18, fontweight='bold', va='top', ha='right')
+fig.suptitle('Rare Event UQ', fontsize=18, y=0.99)
+fig.text(0.01, 0.99, '(d)', fontsize=18, fontweight='bold', va='top', ha='left')
 
-fig.tight_layout()
+fig.tight_layout(rect=(0, 0, 1, 0.95))
 output_dir = Path(f'{temperature}K')
 if args.style == "raincloud":
     output_dir /= "raincloud"

@@ -92,6 +92,7 @@ def _draw_raincloud(ax, sample_groups, labels, colors):
     positions = np.arange(len(labels))
     ax.set_yticks(positions, labels=labels)
     ax.set_ylabel("")
+    ax.tick_params(axis="y", labelsize=12)
     ax.set_ylim(len(labels) - 0.5, -0.5)
 
 
@@ -913,13 +914,16 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
 
     model_samples = rng.normal(mean_prob, sigma_model, size=n_samples)
     sample_groups = [rho_pi_samples, model_samples]
-    labels = [r'UQ $\int \mathbf{P}(\hat p \mid \theta)\pi(\mathrm{d}\theta)$', r' MLE $\mathbf{P}(\hat p \mid \theta_\mathcal{L})$']
+    labels = [
+        r'$\int \mathcal{L}[\widehat p(\theta)]\,\pi(\mathrm{d}\theta)$',
+        r'$\mathcal{L}[\widehat p(\theta_\ell)]$',
+    ]
     colors = ["tab:green", "tab:orange"]
 
     if ref_probs is not None:
         ref_samples = rng.normal(mean_prob_ref, sigma_model_ref, size=n_samples)
         sample_groups.append(ref_samples)
-        labels.append(r'Reference $\mathbf{P}(\hat p_\mathrm{ref})$')
+        labels.append('Reference')
         colors.append("black")
 
     sample_groups = [
@@ -986,6 +990,7 @@ def compute_probability_violin(scores, model_probs, thetas_sample, fims=None, re
 
         ax.set_yticks(np.r_[theta_position, positions])
         ax.set_yticklabels([r'Samples $\mathbf{P}(\hat p \mid \theta_i )$'] + labels)
+        ax.tick_params(axis='y', labelsize=12)
     ax.set_xlabel(xlabel)
     ax.grid(True, axis='x', linestyle=':', alpha=0.6)
 

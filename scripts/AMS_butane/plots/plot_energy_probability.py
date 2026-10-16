@@ -456,7 +456,7 @@ fig.savefig(
     bbox_inches='tight',
 )
 
-# Save the same panels in a portrait layout for documents with a vertical page.
+# Save the same panels in a portrait layout, grouped by model columns.
 vertical_grid = fig.add_gridspec(
     4,
     2,
@@ -468,15 +468,47 @@ vertical_grid = fig.add_gridspec(
     hspace=0.42,
 )
 vertical_axes = [
-    axes[0, 0], axes[0, 1],
-    axes[1, 0], axes[1, 1],
-    temperature_axes[0, 0], temperature_axes[0, 1],
-    temperature_axes[1, 0], temperature_axes[1, 1],
+    axes[1, 0], axes[0, 0],
+    axes[1, 1], axes[0, 1],
+    temperature_axes[0, 0], temperature_axes[1, 0],
+    temperature_axes[0, 1], temperature_axes[1, 1],
 ]
 fig.set_size_inches(14, 20)
 for panel_index, ax in enumerate(vertical_axes):
     ax.set_axes_locator(None)
     ax.set_position(vertical_grid[panel_index // 2, panel_index % 2].get_position(fig))
+
+# Use column headers for the models, and number panels in row order.
+axes[0, 0].set_title('')
+axes[1, 0].set_title('')
+for ax in [*axes.flat, *temperature_axes.flat]:
+    for annotation in list(ax.texts):
+        if annotation.get_text() in {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)'}:
+            annotation.remove()
+
+for col, model_name in enumerate(('MP-0a', 'OMAT-0')):
+    column_box = vertical_grid[0, col].get_position(fig)
+    fig.text(
+        (column_box.x0 + column_box.x1) / 2,
+        0.995,
+        model_name,
+        ha='center',
+        va='top',
+        fontsize=22,
+        fontweight='bold',
+    )
+
+panel_labels = {
+    axes[1, 0]: '(a)', axes[0, 0]: '(b)',
+    axes[1, 1]: '(c)', axes[0, 1]: '(d)',
+    temperature_axes[0, 0]: '(e)', temperature_axes[1, 0]: '(f)',
+    temperature_axes[0, 1]: '(g)', temperature_axes[1, 1]: '(h)',
+}
+for ax, label in panel_labels.items():
+    ax.text(
+        -0.12, 1.08, label, transform=ax.transAxes,
+        fontsize=18, fontweight='bold', va='top', ha='right',
+    )
 
 fig.savefig(
     os.path.join(output_dir, 'energy_probability_all_temperatures_vertical.png'),

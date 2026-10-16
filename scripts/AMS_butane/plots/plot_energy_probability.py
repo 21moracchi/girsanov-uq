@@ -465,7 +465,7 @@ vertical_grid = fig.add_gridspec(
     bottom=0.045,
     top=0.985,
     wspace=0.36,
-    hspace=0.42,
+    hspace=0.32,
 )
 vertical_axes = [
     axes[1, 0], axes[0, 0],
@@ -473,7 +473,7 @@ vertical_axes = [
     temperature_axes[0, 0], temperature_axes[1, 0],
     temperature_axes[0, 1], temperature_axes[1, 1],
 ]
-fig.set_size_inches(14, 20)
+fig.set_size_inches(14, 19)
 for panel_index, ax in enumerate(vertical_axes):
     ax.set_axes_locator(None)
     ax.set_position(vertical_grid[panel_index // 2, panel_index % 2].get_position(fig))

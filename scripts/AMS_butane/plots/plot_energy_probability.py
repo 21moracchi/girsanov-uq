@@ -241,6 +241,7 @@ def run_model(model):
 
     ens_mae_relative = np.mean(np.abs(ens_errors))
     mae_percentage = (ens_mae_relative / true_mae) * 100
+    rmse_energy = np.sqrt(mean_squared_error(E_ref_tot, E_pred_tot))
 
     force_results = {}
     if use_forces and A_f_test is not None:
@@ -305,6 +306,7 @@ def run_model(model):
         "normalized_true_errors": normalized_true_errors[energy_hist_idx],
         "normalized_ens_errors": normalized_ens_errors,
         "mae_percentage": mae_percentage,
+        "rmse_energy": rmse_energy,
         "ev_percentage": ev_percentage,
         **force_results,
     }
@@ -460,6 +462,11 @@ fig.savefig(
 # The two energy-error histograms remain in the landscape version only.
 fig.delaxes(axes[1, 0])
 fig.delaxes(axes[0, 0])
+for result, ax in ((results[1], axes[1, 1]), (results[0], axes[0, 1])):
+    legend_label = ax.get_legend().get_texts()[0]
+    legend_label.set_text(
+        f"{legend_label.get_text()}\nRMSE: {result['rmse_energy']:.4f} eV"
+    )
 vertical_grid = fig.add_gridspec(
     3,
     2,
@@ -521,8 +528,8 @@ for ax, label in panel_labels.items():
         fontsize=18, fontweight='bold', va='top', ha='right',
     )
 
-vertical_font_size = 14
-vertical_title_size = 18
+vertical_font_size = 18
+vertical_title_size = 22
 vertical_font_family = 'DejaVu Sans'
 plt.rcParams['font.family'] = vertical_font_family
 plt.rcParams['mathtext.fontset'] = 'dejavusans'

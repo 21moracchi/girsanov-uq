@@ -252,6 +252,7 @@ def run_model(model):
 
         force_errors = F_pred_tot - F_ref_tot
         force_mae = mean_absolute_error(F_ref_tot, F_pred_tot)
+        force_rmse = np.sqrt(mean_squared_error(F_ref_tot, F_pred_tot))
         normalized_force_errors = force_errors / force_mae
 
         force_hist_idx = sample_indices(len(F_pred_tot), n_max_hist_plot, plot_rng)
@@ -289,6 +290,7 @@ def run_model(model):
             "normalized_force_errors_plot": normalized_force_errors[force_hist_idx],
             "normalized_force_ens_errors": normalized_force_ens_errors,
             "force_mae": force_mae,
+            "force_rmse": force_rmse,
             "force_ev_percentage": force_ev_percentage,
         }
 
@@ -465,7 +467,9 @@ fig.delaxes(axes[0, 0])
 for result, ax in ((results[1], axes[1, 1]), (results[0], axes[0, 1])):
     legend_label = ax.get_legend().get_texts()[0]
     legend_label.set_text(
-        f"{legend_label.get_text()}\nRMSE: {result['rmse_energy']:.4f} eV"
+        f"{legend_label.get_text()}\n"
+        f"RMSE énergie: {result['rmse_energy']:.4f} eV\n"
+        f"RMSE forces: {result['force_rmse']:.4f} eV/Å"
     )
 vertical_grid = fig.add_gridspec(
     3,

@@ -468,8 +468,8 @@ for result, ax in ((results[1], axes[1, 1]), (results[0], axes[0, 1])):
     legend_label = ax.get_legend().get_texts()[0]
     legend_label.set_text(
         f"{legend_label.get_text()}\n"
-        f"RMSE énergie: {result['rmse_energy']:.4f} eV\n"
-        f"RMSE forces: {result['force_rmse']:.4f} eV/Å"
+        f"Energy RMSE: {1000 * result['rmse_energy']:.1f} meV\n"
+        f"Force RMSE: {1000 * result['force_rmse']:.1f} meV/Å"
     )
 vertical_grid = fig.add_gridspec(
     3,

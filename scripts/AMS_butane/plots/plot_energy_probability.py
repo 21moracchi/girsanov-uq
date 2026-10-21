@@ -436,7 +436,7 @@ with plt.rc_context({
     "ytick.labelsize": 12,
     "legend.fontsize": 13,
 }):
-    plot_temperature_axes(temperature_axes)
+    plot_temperature_axes(temperature_axes, models=("omat0", "mp0a"))
 
 # The x-axis is shared; keep temperature tick labels only on the bottom row so
 # they do not collide with the titles of the lower panels.
@@ -483,8 +483,8 @@ vertical_grid = fig.add_gridspec(
 )
 vertical_axes = [
     axes[1, 1], axes[0, 1],
-    temperature_axes[0, 0], temperature_axes[1, 0],
-    temperature_axes[0, 1], temperature_axes[1, 1],
+    temperature_axes[1, 0], temperature_axes[0, 0],
+    temperature_axes[1, 1], temperature_axes[0, 1],
 ]
 fig.set_size_inches(14, 15.5)
 for panel_index, ax in enumerate(vertical_axes):
@@ -523,8 +523,8 @@ for col, model_name in enumerate(('MP-0a', 'OMAT-0')):
 
 panel_labels = {
     axes[1, 1]: '(a)', axes[0, 1]: '(b)',
-    temperature_axes[0, 0]: '(c)', temperature_axes[1, 0]: '(d)',
-    temperature_axes[0, 1]: '(e)', temperature_axes[1, 1]: '(f)',
+    temperature_axes[1, 0]: '(c)', temperature_axes[0, 0]: '(d)',
+    temperature_axes[1, 1]: '(e)', temperature_axes[0, 1]: '(f)',
 }
 for ax, label in panel_labels.items():
     ax.text(

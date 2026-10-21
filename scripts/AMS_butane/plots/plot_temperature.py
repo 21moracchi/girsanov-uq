@@ -248,7 +248,7 @@ def plot_summary(ax, temperatures, summaries, label, color, marker):
     ax.fill_between(temperatures, lower, upper, color=color, alpha=0.18, linewidth=0)
 
 
-def plot_temperature_axes(axes):
+def plot_temperature_axes(axes, models=MODELS):
     """Draw the two-model temperature comparison into a supplied 2x2 axes array."""
     rng = np.random.default_rng(RANDOM_SEED)
     reference_summaries = []
@@ -330,7 +330,7 @@ def plot_temperature_axes(axes):
         ),
     )
 
-    for row, model in enumerate(MODELS):
+    for row, model in enumerate(models):
         for col, (model_summaries, model_coverage, uq_title) in enumerate(uq_columns):
             ax = axes[row, col]
             global_coverage = float(np.mean(model_coverage[model]))

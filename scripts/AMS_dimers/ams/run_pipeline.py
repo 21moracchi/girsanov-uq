@@ -23,7 +23,7 @@ COMMON_BLOCK_PATTERN = re.compile(
 def _ams_index(path: Path) -> int:
     match = re.search(r"ams_(\d+)$", path.name)
     if match is None:
-        raise ValueError(f"Nom de dossier AMS inattendu: {path}")
+        raise ValueError(f"Unexpected AMS directory name: {path}")
     return int(match.group(1))
 
 
@@ -52,7 +52,7 @@ def _expand_common_blocks(text: str) -> str:
         rel_path = match.group(2).strip()
         snippet_path = ROOT / rel_path
         if not snippet_path.exists():
-            raise FileNotFoundError(f"Bloc commun introuvable: {snippet_path}")
+            raise FileNotFoundError(f"Common code block not found: {snippet_path}")
 
         snippet_text = snippet_path.read_text()
         lines = snippet_text.splitlines()
@@ -144,13 +144,13 @@ def submit_jobs(target_dirs: list[Path]) -> list[str]:
         if match:
             job_ids.append(match.group(1))
         else:
-            raise RuntimeError(f"Impossible de récupérer le Job ID : {result.stdout}")
+            raise RuntimeError(f"Could not retrieve the job ID: {result.stdout}")
     return job_ids
 
 
 def submit_reweight_jobs(target_dirs: list[Path], parent_job_ids: list[str]) -> list[str]:
     if len(target_dirs) != len(parent_job_ids):
-        raise ValueError("target_dirs et parent_job_ids doivent avoir la même longueur.")
+        raise ValueError("target_dirs and parent_job_ids must have the same length.")
 
     reweight_job_ids = []
     for target_dir, parent_job_id in zip(target_dirs, parent_job_ids):
@@ -165,7 +165,7 @@ def submit_reweight_jobs(target_dirs: list[Path], parent_job_ids: list[str]) -> 
         if match:
             reweight_job_ids.append(match.group(1))
         else:
-            raise RuntimeError(f"Impossible de récupérer le Job ID du reweighting : {result.stdout}")
+            raise RuntimeError(f"Could not retrieve the reweighting job ID: {result.stdout}")
 
     return reweight_job_ids
 
@@ -184,7 +184,7 @@ def submit_reweight_jobs_independent(target_dirs: list[Path]) -> list[str]:
         if match:
             reweight_job_ids.append(match.group(1))
         else:
-            raise RuntimeError(f"Impossible de récupérer le Job ID du reweighting : {result.stdout}")
+            raise RuntimeError(f"Could not retrieve the reweighting job ID: {result.stdout}")
 
     return reweight_job_ids
 
@@ -212,7 +212,7 @@ def submit_aggregate_job(reweight_job_ids: list[str], n_ams: int, n_reps: int) -
     match = re.search(r"Submitted batch job (\d+)", result.stdout)
     if match:
         return match.group(1)
-    raise RuntimeError(f"Impossible de récupérer le Job ID de l'agrégation : {result.stdout}")
+    raise RuntimeError(f"Could not retrieve the aggregation job ID: {result.stdout}")
 
 
 def cancel_jobs(job_ids: list[str]) -> None:
@@ -241,13 +241,13 @@ def wait_for_files_completion(n_walkers: int, n_reps: int, poll_seconds: int, ti
             return
 
         if deadline is not None and time.time() >= deadline:
-            raise TimeoutError("Le délai d'attente a été dépassé avant la création de tous les fichiers.")
+            raise TimeoutError("Timed out before all files were created.")
 
         time.sleep(poll_seconds)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Prépare et lance les étapes ini_conds, AMS et resampling.")
+    parser = argparse.ArgumentParser(description="Prepare and run the ini_conds, AMS, and resampling stages.")
     parser.add_argument("--n-walkers", type=int, default=10)
     parser.add_argument("--n-ams", type=int, default=10)
     parser.add_argument("--n-reps", type=int, required=True)
@@ -259,9 +259,9 @@ def parse_args() -> argparse.Namespace:
         choices=["all", "ini_conds", "ams", "resampling"],
         default="all",
         help=(
-            "Étape à exécuter : "
-            "all (pipeline complet), ini_conds (seulement conditions initiales), "
-            "ams (seulement AMS), resampling (seulement reweighting+agrégation)."
+            "Stage to run: "
+            "all (complete pipeline), ini_conds (initial conditions only), "
+            "ams (AMS only), resampling (reweighting and aggregation only)."
         ),
     )
     return parser.parse_args()
@@ -295,7 +295,7 @@ def main() -> None:
         ams_dirs = find_existing_ams_dirs(args.n_ams)
         if len(ams_dirs) == 0:
             raise RuntimeError(
-                "Aucun dossier ams_* trouvé. Lancez d'abord l'étape AMS ou retirez le filtre --n-ams."
+                "No ams_* directories found. Run the AMS stage first or remove the --n-ams filter."
             )
         reweight_job_ids = submit_reweight_jobs_independent(ams_dirs)
         submit_aggregate_job(reweight_job_ids, len(ams_dirs), args.n_reps)

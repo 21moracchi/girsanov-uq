@@ -149,7 +149,7 @@ class LangevinOBABO(MolecularDynamics):
             p = p + (self.dt / 2) * forces
 
             # --- A step (drift: update positions) ---
-            # Utilisation de p/m et non des forces !
+            # Use p/m rather than the forces.
             q = self.atoms.get_positions()
             q = q + self.dt * p / self.masses
 
@@ -190,7 +190,7 @@ class LangevinOBABO(MolecularDynamics):
         p = p + (self.dt / 2) * forces
 
         # --- A step (drift: update positions) ---
-        # Utilisation de p/m et non des forces !
+        # Use p/m rather than the forces.
         q = self.atoms.get_positions()
         q = q + self.dt * p / self.masses
 

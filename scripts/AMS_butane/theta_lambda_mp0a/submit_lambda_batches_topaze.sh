@@ -57,7 +57,7 @@ wait_for_jobs_to_appear() {
             return
         fi
         if [ "$waited" -ge "$START_TIMEOUT_SECONDS" ]; then
-            echo "Aucun job AMS visible apres ${START_TIMEOUT_SECONDS}s." >&2
+            echo "No AMS jobs visible after ${START_TIMEOUT_SECONDS}s." >&2
             exit 1
         fi
         sleep "$START_SLEEP_SECONDS"
@@ -72,13 +72,13 @@ wait_for_queue_to_return() {
         if [ "$n_jobs" -le "$baseline" ]; then
             return
         fi
-        echo "Queue: $n_jobs jobs; attente avant le point lambda suivant..."
+        echo "Queue: $n_jobs jobs; waiting before the next lambda point..."
         sleep "$SLEEP_SECONDS"
     done
 }
 
 if [ ! -f "$CLEAN_SCRIPT" ]; then
-    echo "Script de nettoyage introuvable: $CLEAN_SCRIPT" >&2
+    echo "Cleanup script not found: $CLEAN_SCRIPT" >&2
     exit 1
 fi
 
@@ -96,11 +96,11 @@ for sample_dir in "$ROOT_DIR"/sample_[0-9]*; do
         [ -d "$lambda_dir" ] || continue
         results_file="$lambda_dir/results_prob.txt"
         if has_complete_results "$results_file"; then
-            echo "=== ${lambda_dir#$ROOT_DIR/}: deja termine ($EXPECTED_AMS_RUNS resultats), ignore ==="
+            echo "=== ${lambda_dir#$ROOT_DIR/}: already complete ($EXPECTED_AMS_RUNS results), skipping ==="
             continue
         fi
         echo "=== ${lambda_dir#$ROOT_DIR/} ==="
-        echo "Resultats absents ou incomplets: lancement de ce point lambda."
+        echo "Results are missing or incomplete: running this lambda point."
         python "$CLEAN_SCRIPT"
         (cd "$lambda_dir" && python make_input_files.py)
         (cd "$lambda_dir" && ccc_msub run_all_topaze)
@@ -110,4 +110,4 @@ for sample_dir in "$ROOT_DIR"/sample_[0-9]*; do
     done
 done
 
-echo "Termine. Agreger ensuite avec: python get_results.py"
+echo "Done. Aggregate results with: python get_results.py"

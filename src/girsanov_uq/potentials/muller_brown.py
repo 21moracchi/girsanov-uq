@@ -41,9 +41,9 @@ class RuggedMullerBrown(Calculator):
         r = pos.flatten()
         
         if len(r) < N_dim:
-            raise ValueError(f"Le système ne possède pas assez de degrés de liberté ({len(r)}) pour la dimension N={N_dim}.")
+            raise ValueError(f"The system has too few degrees of freedom ({len(r)}) for dimension N={N_dim}.")
         if len(K) != N_dim - 2:
-            raise ValueError(f"Le tableau K doit être de taille N_dim - 2 (attendu {N_dim - 2}, reçu {len(K)}).")
+            raise ValueError(f"K must have size N_dim - 2 (expected {N_dim - 2}, got {len(K)}).")
 
         x = r[0]
         y = r[1]
@@ -124,43 +124,43 @@ class RuggedMullerBrown(Calculator):
         show=True
     ):
         """
-        Trace une coupe 2D du potentiel en fonction de (x, y).
+        Plot a 2D slice of the potential as a function of (x, y).
 
-        Paramètres
+        Parameters
         ----------
         xlim, ylim : tuple(float, float)
-            Bornes des axes x et y.
+            Bounds for the x and y axes.
         n_points : int
-            Nombre de points par axe pour la grille.
+            Number of grid points per axis.
         r_fixed : array-like ou None
-            Valeurs fixées des coordonnées supplémentaires r[2:],
-            de longueur N_dim - 2. Si None, elles sont fixées à zéro.
+            Fixed values for the additional coordinates r[2:],
+            of length N_dim - 2. If None, they are set to zero.
         levels : int
-            Nombre de niveaux de contour.
-        clip_percentiles : tuple(float, float) ou None
-            Percentiles (pmin, pmax) utilisés pour clipper les valeurs
-            de V avant affichage afin d'améliorer le contraste.
-            Mettre None pour désactiver le clipping.
+            Number of contour levels.
+        clip_percentiles : tuple(float, float) or None
+            Percentiles (pmin, pmax) used to clip V values
+            before plotting to improve contrast.
+            Set to None to disable clipping.
         filled : bool
-            Si True, utilise contourf; sinon contour.
+            If True, use contourf; otherwise use contour.
         cmap : str
             Colormap matplotlib.
-        ax : matplotlib.axes.Axes ou None
-            Axe sur lequel tracer. Si None, crée une nouvelle figure.
+        ax : matplotlib.axes.Axes or None
+            Axes on which to plot. If None, create a new figure.
         colorbar : bool
-            Ajoute une barre de couleur.
-        points : array-like ou None
-            Liste/array de points 2D de forme (N, 2) à superposer sur la carte.
-            Les points sont tracés sans label.
-        point_kwargs : dict ou None
-            Options passées à ax.scatter pour personnaliser l'apparence des points.
+            Whether to add a colorbar.
+        points : array-like or None
+            List or array of 2D points with shape (N, 2) to overlay on the map.
+            The points are plotted without labels.
+        point_kwargs : dict or None
+            Options passed to ax.scatter to customize the point appearance.
         show : bool
-            Appelle plt.show() si True.
+            Call plt.show() if True.
 
-        Retour
+        Returns
         ------
         ax : matplotlib.axes.Axes
-            Axe contenant le tracé.
+            Axes containing the plot.
         """
         import matplotlib.pyplot as plt
 
@@ -171,10 +171,10 @@ class RuggedMullerBrown(Calculator):
         omega = float(self.parameters['omega'])
 
         if len(A) != 4:
-            raise ValueError(f"Le tableau A doit être de taille 4 (reçu {len(A)}).")
+            raise ValueError(f"A must have size 4 (got {len(A)}).")
         if len(K) != N_dim - 2:
             raise ValueError(
-                f"Le tableau K doit être de taille N_dim - 2 (attendu {N_dim - 2}, reçu {len(K)})."
+                f"K must have size N_dim - 2 (expected {N_dim - 2}, got {len(K)})."
             )
 
         if r_fixed is None:
@@ -183,7 +183,7 @@ class RuggedMullerBrown(Calculator):
             r_fixed = np.asarray(r_fixed, dtype=float)
             if len(r_fixed) != N_dim - 2:
                 raise ValueError(
-                    f"r_fixed doit être de taille N_dim - 2 (attendu {N_dim - 2}, reçu {len(r_fixed)})."
+                    f"r_fixed must have size N_dim - 2 (expected {N_dim - 2}, got {len(r_fixed)})."
                 )
 
         x = np.linspace(xlim[0], xlim[1], int(n_points))
@@ -214,12 +214,12 @@ class RuggedMullerBrown(Calculator):
         if clip_percentiles is not None:
             if len(clip_percentiles) != 2:
                 raise ValueError(
-                    f"clip_percentiles doit contenir 2 valeurs (reçu {len(clip_percentiles)})."
+                    f"clip_percentiles must contain 2 values (got {len(clip_percentiles)})."
                 )
             pmin, pmax = float(clip_percentiles[0]), float(clip_percentiles[1])
             if not (0.0 <= pmin < pmax <= 100.0):
                 raise ValueError(
-                    "clip_percentiles doit vérifier 0 <= pmin < pmax <= 100."
+                    "clip_percentiles must satisfy 0 <= pmin < pmax <= 100."
                 )
             vmin, vmax = np.percentile(V, [pmin, pmax])
             V_plot = np.clip(V, vmin, vmax)
@@ -238,7 +238,7 @@ class RuggedMullerBrown(Calculator):
             pts = np.asarray(points, dtype=float)
             if pts.ndim != 2 or pts.shape[1] != 2:
                 raise ValueError(
-                    f"points doit être de forme (N, 2) (reçu {pts.shape})."
+                    f"points must have shape (N, 2) (got {pts.shape})."
                 )
             kwargs = {
                 's': 24,

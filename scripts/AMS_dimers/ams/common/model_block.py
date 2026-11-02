@@ -37,7 +37,7 @@ valid_positions = possible_positions[mask]
 
 # Randomly select n_solvent valid grid positions
 if len(valid_positions) < n_solvent:
-    raise ValueError("La grille est trop lâche ou L est trop petit pour n_solvent.")
+    raise ValueError("The grid is too sparse or L is too small for n_solvent.")
 
 idx = np.random.choice(len(valid_positions), n_solvent, replace=False)
 solvent_positions = valid_positions[idx]

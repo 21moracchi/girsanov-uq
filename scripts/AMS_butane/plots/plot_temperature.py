@@ -37,11 +37,11 @@ def load_reference_probabilities(temperature):
     """Read the independent direct MPA AMS estimates at one temperature."""
     path = AMS_DIR / f"ams_runs_mpa_{temperature}" / "results_prob.txt"
     if not path.exists():
-        raise FileNotFoundError(f"Résultats AMS de référence absents : {path}")
+        raise FileNotFoundError(f"Reference AMS results are missing: {path}")
     values = np.atleast_1d(np.loadtxt(path, dtype=float))
     values = values[np.isfinite(values)]
     if values.size == 0 or np.any(values <= 0):
-        raise ValueError(f"Probabilités de référence invalides dans {path}")
+        raise ValueError(f"Invalid reference probabilities in {path}")
     return values
 
 
@@ -49,11 +49,11 @@ def load_loop_times(model, temperature):
     """Read positive AMS loop times in femtoseconds."""
     path = AMS_DIR / f"ams_runs_{model}_{temperature}" / "t_loop.txt"
     if not path.exists():
-        raise FileNotFoundError(f"Temps de boucle AMS absents : {path}")
+        raise FileNotFoundError(f"AMS loop times are missing: {path}")
     values = np.atleast_1d(np.loadtxt(path, dtype=float))
     values = values[np.isfinite(values) & (values > 0)]
     if values.size < 2:
-        raise ValueError(f"Pas assez de temps de boucle positifs dans {path}")
+        raise ValueError(f"Not enough positive loop times in {path}")
     return values
 
 
@@ -94,15 +94,15 @@ def probability_by_posterior_sample(model, temperature):
     posterior_samples = np.load(posterior_path)
 
     if probs.ndim != 1 or scores.ndim != 3:
-        raise ValueError(f"Formes inattendues des données AMS pour {model}, {temperature} K")
+        raise ValueError(f"Unexpected AMS data shapes for {model} at {temperature} K")
     if scores.shape[0] != probs.size:
-        raise ValueError(f"Nombre de scores et de probabilités incohérent pour {model}, {temperature} K")
+        raise ValueError(f"The number of scores and probabilities is inconsistent for {model} at {temperature} K")
     if scores.shape[-1] != posterior_samples.shape[0]:
-        raise ValueError(f"Dimension des scores et des échantillons POPS incompatible pour {model}")
+        raise ValueError(f"Score dimensions are incompatible with the POPS samples for {model}")
     if initial_descriptors.shape[-1] != posterior_samples.shape[0]:
-        raise ValueError(f"Dimension de ini_D et des échantillons POPS incompatible pour {model}")
+        raise ValueError(f"ini_D dimensions are incompatible with the POPS samples for {model}")
     if np.any(probs <= 0) or not np.all(np.isfinite(probs)):
-        raise ValueError(f"Probabilités AMS invalides pour {model}, {temperature} K")
+        raise ValueError(f"Invalid AMS probabilities for {model} at {temperature} K")
 
     beta = 1.0 / (temperature * KB_KCAL_PER_MOL_K)
     mean_scores_by_run = np.mean(scores, axis=1)
@@ -138,7 +138,7 @@ def probability_by_posterior_sample(model, temperature):
         or not np.all(np.isfinite(sigma))
         or np.any(posterior_probabilities <= 0)
     ):
-        raise ValueError(f"Repondération invalide pour {model}, {temperature} K")
+        raise ValueError(f"Invalid reweighting for {model} at {temperature} K")
     return posterior_probabilities, sigma, probs, probs[:, None] * projected_scores, normalizer
 
 
@@ -227,7 +227,7 @@ def ams_only_bootstrap_draws(probs, weighted_scores, normalizer, rng):
             probability_by_bootstrap_and_theta, axis=1
         )
     if not np.all(np.isfinite(posterior_average)) or np.any(posterior_average <= 0):
-        raise ValueError("Le bootstrap AMS a produit des probabilités invalides.")
+        raise ValueError("The AMS bootstrap produced invalid probabilities.")
     return posterior_average
 
 
@@ -290,7 +290,7 @@ def plot_temperature_axes(axes, models=MODELS):
                 )
             elif TOTAL_UQ_ENVELOPE != "central_95":
                 raise ValueError(
-                    "TOTAL_UQ_ENVELOPE doit être 'central_95' ou 'pops_minmax'."
+                    "TOTAL_UQ_ENVELOPE must be 'central_95' or 'pops_minmax'."
                 )
             uq_total[model].append(total_summary)
             total_covered = reference_band_fraction_in_uq(
@@ -300,7 +300,7 @@ def plot_temperature_axes(axes, models=MODELS):
 
             print(
                 f"{model}, {temperature} K: "
-                f"p moyen sur theta={np.mean(posterior_probabilities):.4e}, "
+                f"mean p over theta={np.mean(posterior_probabilities):.4e}, "
                 f"IC95 AMS seul=[{np.quantile(ams_draws, 0.025):.4e}, "
                 f"{np.quantile(ams_draws, 0.975):.4e}], "
                 f"IC95 total=[{np.quantile(draws, 0.025):.4e}, "
@@ -308,7 +308,7 @@ def plot_temperature_axes(axes, models=MODELS):
             )
 
         print(
-            f"MPA référence, {temperature} K: "
+            f"MPA reference at {temperature} K: "
             f"p={ref_mean:.4e}, IC95=[{reference_summaries[-1][1]:.4e}, "
             f"{reference_summaries[-1][2]:.4e}] (n={ref.size})"
         )
@@ -433,12 +433,12 @@ def plot_rate_temperature_axes(axes):
             )
 
             print(
-                f"{model}, {temperature} K: k médian (AMS seul)="
-                f"{ams_summary[0]:.4e} s⁻¹, k médian (UQ totale)="
+                f"{model}, {temperature} K: median k (AMS only)="
+                f"{ams_summary[0]:.4e} s⁻¹, median k (total UQ)="
                 f"{total_summary[0]:.4e} s⁻¹"
             )
         print(
-            f"MPA référence, {temperature} K: k médian="
+            f"MPA reference at {temperature} K: median k="
             f"{reference_summary[0]:.4e} s⁻¹ (IC95 "
             f"[{reference_summary[1]:.4e}, {reference_summary[2]:.4e}])"
         )
@@ -516,7 +516,7 @@ def main():
     fig.tight_layout()
     fig.savefig(output_path, dpi=300)
     plt.close(fig)
-    print(f"Figure enregistrée : {output_path}")
+    print(f"Figure saved to {output_path}")
 
 
 if __name__ == "__main__":

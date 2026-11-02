@@ -16,7 +16,7 @@ AMS_DIR = ROOT / "ams"
 def _ams_index(path: Path) -> int:
     match = re.search(r"ams_(\d+)$", path.name)
     if match is None:
-        raise ValueError(f"Nom de dossier AMS inattendu: {path}")
+        raise ValueError(f"Unexpected AMS directory name: {path}")
     return int(match.group(1))
 
 
@@ -47,7 +47,7 @@ def _infer_shapes(ams_dirs: list[Path], n_reps: int | None) -> tuple[int, int]:
                 inferred_n_reps = max(inferred_n_reps, int(scores.shape[0]))
 
     if inferred_dim is None:
-        raise RuntimeError("Impossible d'inférer dim(a) depuis les fichiers reweighting_results.npz")
+        raise RuntimeError("Could not infer dim(a) from the reweighting_results.npz files")
 
     return inferred_n_reps, inferred_dim
 
@@ -65,7 +65,7 @@ def main() -> None:
 
     ams_dirs = _find_ams_dirs(args.n_ams)
     if len(ams_dirs) == 0:
-        raise RuntimeError("Aucun dossier ams_* trouvé dans draft/ams")
+        raise RuntimeError("No ams_* directories found in draft/ams")
 
     n_ams = len(ams_dirs)
     n_reps, dim = _infer_shapes(ams_dirs, args.n_reps)

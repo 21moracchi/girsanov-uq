@@ -46,14 +46,14 @@ def main():
     reference_probs = np.load(REWEIGHTING_DIR / "final_probs.npy")
 
     if directions.shape != (len(theta_indices), theta_l.size):
-        raise ValueError("directions.npy incompatible avec theta_l.npy.")
+        raise ValueError("directions.npy is incompatible with theta_l.npy.")
     if scores.shape[-1] != theta_l.size:
-        raise ValueError("Dimension des scores incompatible avec theta_l.npy.")
+        raise ValueError("Score dimensions are incompatible with theta_l.npy.")
 
     if reference_probs.ndim != 1 or scores.shape[0] != reference_probs.size:
         raise ValueError(
-            "final_probs et final_scores doivent avoir le même nombre d'AMS "
-            "indépendantes sur leur premier axe."
+            "final_probs and final_scores must have the same number of independent AMS runs "
+            "along their first axis."
         )
 
     p0 = np.mean(reference_probs)
@@ -91,7 +91,7 @@ def main():
         direct = np.load(direct_path)
         expected_shape = (len(theta_indices), len(lambdas))
         if direct.ndim != 3 or direct.shape[:2] != expected_shape:
-            raise ValueError(f"probs.npy doit commencer par la forme {expected_shape}.")
+            raise ValueError(f"probs.npy must start with shape {expected_shape}.")
 
     fig, axes = plt.subplots(
         len(theta_indices),

@@ -19,7 +19,7 @@ def numeric_values(path):
         if re.fullmatch(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?", line.strip())
     ]
     if not lines:
-        raise ValueError(f"Aucune probabilite dans {path}")
+        raise ValueError(f"No probabilities found in {path}")
     return np.atleast_1d(np.loadtxt(io.StringIO("\n".join(lines))))
 
 
@@ -45,10 +45,10 @@ def main():
             collected[sample_id, lookup[lambda_value]] = numeric_values(results_path)
 
     if not collected:
-        raise SystemExit("Aucun results_prob.txt trouve.")
+        raise SystemExit("No results_prob.txt files found.")
     sizes = {values.size for values in collected.values()}
     if len(sizes) != 1:
-        raise SystemExit(f"Nombre de repetitions AMS incompatible: {sorted(sizes)}")
+        raise SystemExit(f"Inconsistent number of AMS repetitions: {sorted(sizes)}")
 
     n_rep = sizes.pop()
     probs = np.full((len(indices), len(lambdas), n_rep), np.nan)

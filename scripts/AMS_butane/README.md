@@ -12,9 +12,9 @@ The following model files are expected in `scripts/AMS_butane/models/` (they are
 
 ## Directory organization
 
-- `ams_runs_mpa_{200,300,500}/`
-- `ams_runs_mp0a_{200,300,500}/`
-- `ams_runs_omat0_{200,300,500}/`
+- `ams_runs_mpa_{200,300,400,500}/`
+- `ams_runs_mp0a_{200,300,400,500}/`
+- `ams_runs_omat0_{200,300,400,500}/`
 - `scripts/AMS_butane/plots/`
 
 Each `ams_runs_*` directory typically contains:
@@ -42,3 +42,21 @@ The aggregated outputs are written to `scripts/AMS_butane/ams_runs_*/reweighting
 - `final_probs.npy`
 - `ini_D.npy`
 
+## Posterior-direction study
+
+The `theta_lambda_mp0a/` directory contains a separate study that samples posterior parameter directions and runs AMS along a range of `lambda` values. Start with:
+
+```sh
+python create_lambda_folders.py
+```
+
+Then submit the generated batches with `submit_lambda_batches_topaze.sh` from this directory and collect probabilities with:
+
+```sh
+python get_results.py
+python plot_samples.py
+```
+
+## Plots
+
+The plotting scripts are in `plots/`. For example, `python scripts/AMS_butane/plots/plot_temperature.py` compares reference AMS estimates and reweighted uncertainty across temperatures. Its input data must already exist in the corresponding `ams_runs_*` directories.

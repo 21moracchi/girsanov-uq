@@ -56,6 +56,8 @@ python scripts/AMS_dimers/ams/run_pipeline.py --n-reps 500
 
 For the butane system, the repository is organized by experiment (`ams_runs_mp0a_*`, `ams_runs_mpa_*`, `ams_runs_omat0_*`). Local orchestration is handled through `scripts/AMS_butane/ams_runs_*/make_input_files.py`, `scripts/AMS_butane/ams_runs_*/run_all_topaze`, and `scripts/AMS_butane/ams_runs_*/reweighting/*`.
 
+The `scripts/AMS_butane/theta_lambda_mp0a/` workflow generates posterior directions, creates AMS runs along each direction, and collects the resulting probabilities. Plotting and analysis scripts are in `scripts/AMS_butane/plots/`.
+
 ## Mapping between paper systems and repository structure
 
 | System | Main scripts | Main inputs | Main outputs |

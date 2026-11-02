@@ -531,7 +531,7 @@ def compute_probability_pdf(scores, model_probs, thetas_sample, fims=None, ref_p
     #
     #     f_A(A) = f_p(10**(-A)) * ln(10) * 10**(-A)
     #
-    # Comme p = 10**(-A), le jacobien vaut ln(10) * p.
+    # Since p = 10**(-A), the Jacobian is ln(10) * p.
     # ============================================================
 
     if use_Ahat:

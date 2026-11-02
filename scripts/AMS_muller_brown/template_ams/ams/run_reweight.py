@@ -31,7 +31,7 @@ reweightor = Reweightor(
 def _replica_index(path: Path) -> int:
     match = re.search(r"rep_(\d+)\.traj$", path.name)
     if match is None:
-        raise ValueError(f"Nom de fichier inattendu: {path.name}")
+        raise ValueError(f"Unexpected file name: {path.name}")
     return int(match.group(1))
 
 

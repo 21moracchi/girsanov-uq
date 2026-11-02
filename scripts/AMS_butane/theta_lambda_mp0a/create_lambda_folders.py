@@ -26,7 +26,7 @@ def require_base_files():
     names = ["job", "job_topaze", "run_ams.py", "run_all_topaze", "compute_probs.py"]
     missing = [name for name in names if not (BASE_RUN / name).is_file()]
     if missing:
-        raise SystemExit(f"Fichiers de base manquants dans {BASE_RUN}: {', '.join(missing)}")
+        raise SystemExit(f"Missing base files in {BASE_RUN}: {', '.join(missing)}")
 
 
 def make_run_template():
@@ -60,7 +60,7 @@ def make_run_template():
     )
     required = ("theta_index = None", "lambda_value = None", "linear_weights=theta")
     if not all(item in text for item in required):
-        raise RuntimeError("Impossible de construire le template run_ams.py")
+        raise RuntimeError("Could not build the run_ams.py template")
     return text
 
 
@@ -97,7 +97,7 @@ for i in range(n_ams):
         count=1,
     )
     if "None" in text[text.find("ams_seed ="):text.find("atoms = molecule")]:
-        raise RuntimeError(f"Placeholders non remplaces dans {{dirname}}/run_ams.py")
+        raise RuntimeError(f"Unreplaced placeholders in {{dirname}}/run_ams.py")
     (dirname / "run_ams.py").write_text(text)
 
 print(f"Prepared {{n_ams}} AMS directories for theta index {{theta_index}}, lambda={{lambda_value}}.")
@@ -112,9 +112,9 @@ def rebase_existing_runs_at_zero():
         raise SystemExit(f"Indices posterior introuvables: {indices_path}")
     indices = np.load(indices_path)
     if indices.ndim != 1 or len(indices) != DEFAULT_N_SAMPLES:
-        raise SystemExit(f"Il faut exactement {DEFAULT_N_SAMPLES} indices dans {indices_path}.")
+        raise SystemExit(f"Expected exactly {DEFAULT_N_SAMPLES} indices in {indices_path}.")
     if np.any(indices < 0) or np.any(indices >= posterior.shape[1]):
-        raise SystemExit("Un theta_index est hors limites pour le posterior.")
+        raise SystemExit("A theta_index is out of range for the posterior.")
 
     theta_l = np.zeros(posterior.shape[0], dtype=posterior.dtype)
     directions = posterior[:, indices].T
@@ -125,7 +125,7 @@ def rebase_existing_runs_at_zero():
     old_lambdas = np.load(lambdas_path) if lambdas_path.exists() else LAMBDAS
     keep_lambda = np.isin(old_lambdas, LAMBDAS)
     if not np.all(np.isin(LAMBDAS, old_lambdas)):
-        raise SystemExit(f"Impossible de retrouver toutes les valeurs {LAMBDAS} dans {old_lambdas}.")
+        raise SystemExit(f"Could not find all values {LAMBDAS} in {old_lambdas}.")
     for filename in ("probs.npy", "available.npy"):
         array_path = RESULTS_DIR / filename
         if not array_path.exists():
@@ -133,8 +133,8 @@ def rebase_existing_runs_at_zero():
         values = np.load(array_path)
         if values.ndim < 2 or values.shape[1] != len(old_lambdas):
             raise SystemExit(
-                f"Forme inattendue pour {array_path}: {values.shape}; "
-                f"l'axe lambda devrait avoir {len(old_lambdas)} valeurs."
+                f"Unexpected shape for {array_path}: {values.shape}; "
+                f"the lambda axis should have {len(old_lambdas)} values."
             )
         np.save(array_path, values[:, keep_lambda, ...])
     np.save(lambdas_path, LAMBDAS)
@@ -179,8 +179,8 @@ def rebase_existing_runs_at_zero():
         path.write_text(text)
 
     print(f"Reference zero appliquee aux {len(run_files)} scripts run_ams.py.")
-    print(f"Directions recalculees pour les indices {', '.join(map(str, indices))}.")
-    print(f"Plage lambda active: {LAMBDAS[0]} a {LAMBDAS[-1]} ({len(LAMBDAS)} valeurs).")
+    print(f"Recomputed directions for indices {', '.join(map(str, indices))}.")
+    print(f"Active lambda range: {LAMBDAS[0]} to {LAMBDAS[-1]} ({len(LAMBDAS)} values).")
 
 
 def main():
@@ -201,12 +201,12 @@ def main():
     if args.n_samples != DEFAULT_N_SAMPLES:
         raise SystemExit(f"Ce protocole requiert exactement {DEFAULT_N_SAMPLES} samples.")
     if any(ROOT.glob("sample_*")):
-        raise SystemExit("Des dossiers sample_* existent deja; aucun ecrasement n'est effectue.")
+        raise SystemExit("Some sample_* directories already exist; no files were overwritten.")
 
     require_base_files()
     posterior = np.load(POSTERIOR_PATH)
     if posterior.ndim != 2:
-        raise SystemExit("posterior_samples doit etre un tableau 2D.")
+        raise SystemExit("posterior_samples must be a 2D array.")
     theta_l = np.zeros(posterior.shape[0], dtype=posterior.dtype)
 
     rng = np.random.default_rng(args.seed)

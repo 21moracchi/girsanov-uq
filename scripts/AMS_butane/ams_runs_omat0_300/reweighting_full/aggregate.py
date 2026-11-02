@@ -21,7 +21,7 @@ ams_folders = sorted([d for d in os.listdir(root_dir) if d.startswith('ams_')], 
 n_ams = len(ams_folders)
 
 if n_ams == 0:
-    raise FileNotFoundError("Aucun dossier ams_ trouvé.")
+    raise FileNotFoundError("No ams_ directory found.")
 
 first_folder = os.path.join(root_dir, ams_folders[0])
 rep_files_init = sorted([f for f in os.listdir(first_folder) if f.endswith('_score.npy')], key=get_idx)
@@ -37,9 +37,9 @@ scores_tensor = np.empty((n_ams, n_rep, p))
 fims_tensor = np.empty((n_ams, n_rep, fim_dim, fim_dim))
 probs_list = []
 
-with tqdm(total=n_ams, desc="Traitement des dossiers ams") as pbar:
+with tqdm(total=n_ams, desc="Processing AMS directories") as pbar:
     for i, ams_folder in enumerate(ams_folders):
-        # 1. Extraction des scores (dans root_dir)
+        # 1. Extract scores from root_dir
         current_score_path = os.path.join(root_dir, ams_folder)
         rep_files = sorted([f for f in os.listdir(current_score_path) if f.endswith('_score.npy')], key=get_idx)
         
@@ -47,7 +47,7 @@ with tqdm(total=n_ams, desc="Traitement des dossiers ams") as pbar:
             score_path = os.path.join(current_score_path, rep_file)
             fim_path = os.path.join(current_score_path, rep_file.replace('_score.npy', '_fim.npy'))
             if not os.path.exists(fim_path):
-                raise FileNotFoundError(f"Fichier FIM manquant pour {score_path}: {fim_path}")
+                raise FileNotFoundError(f"Missing FIM file for {score_path}: {fim_path}")
 
             score = np.load(score_path)
             fim = np.load(fim_path)

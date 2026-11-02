@@ -317,11 +317,11 @@ def plot_temperature_axes(axes, models=MODELS):
     labels = {"mp0a": "MP-0a", "omat0": "OMAT-0"}
     markers = {"mp0a": "o", "omat0": "s"}
     uq_columns = (
-        (uq_ams_only, coverage_ams_only, "AMS variance"),
+        (uq_ams_only, coverage_ams_only, r"Rare Event Sampling at $\theta_\ell$"),
         (
             uq_total,
             coverage_total,
-            "AMS variance + model UQ"
+            r"Uncertainty Propagation ($\theta \sim \pi_{\mathrm{POPS}}$)"
             + {
                 "pops_95": " (POPS 95%)",
                 "pops_minmax": " (POPS min–max)",
@@ -447,8 +447,12 @@ def plot_rate_temperature_axes(axes):
     labels = {"mp0a": "MP-0a", "omat0": "OMAT-0"}
     markers = {"mp0a": "o", "omat0": "s"}
     uq_columns = (
-        (uq_ams_only, coverage_ams_only, "AMS variance"),
-        (uq_total, coverage_total, "AMS variance + model UQ"),
+        (uq_ams_only, coverage_ams_only, r"Rare Event Sampling at $\theta_\ell$"),
+        (
+            uq_total,
+            coverage_total,
+            r"Uncertainty Propagation ($\theta \sim \pi_{\mathrm{POPS}}$)",
+        ),
     )
     for row, model in enumerate(MODELS):
         for col, (summaries, coverage, uq_title) in enumerate(uq_columns):

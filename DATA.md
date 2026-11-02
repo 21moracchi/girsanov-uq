@@ -21,7 +21,7 @@ References:
 - `scripts/AMS_butane/ams_runs_mpa_300/run_ams.py`
 - `scripts/AMS_butane/ams_runs_mp0a_300/run_ams.py`
 - `scripts/AMS_butane/ams_runs_omat0_300/run_ams.py`
-- same patterns in `*_200`, `*_500`, and `theta_mp0a_500/theta_*/run_ams.py`.
+- the same patterns in the other temperature-specific `ams_runs_*` folders.
 
 ## Expected/generated trajectories (not versioned)
 
@@ -73,8 +73,6 @@ Examples of outputs written by the scripts:
 - `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_scores.npy`
 - `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/final_probs.npy`
 - `scripts/AMS_butane/ams_runs_*/reweighting/aggregated_results/ini_D.npy`
-- `scripts/AMS_butane/theta_mp0a_500/results/probs.npy`
-- `scripts/AMS_butane/theta_mp0a_500/results/thetas.npy`
 
 References: `aggregate.py`, `compute_ini_D.py`, `get_results.py`, `plots/` scripts.
 

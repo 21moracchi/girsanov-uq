@@ -2,7 +2,7 @@
 
 Code accompanying our paper on parametric uncertainty propagation for rare-event probabilities using Adaptive Multilevel Splitting (AMS) and Girsanov reweighting.
 
-Paper: [Girsanov Reweighting for Uncertainty Propagation in Rare-Event Kinetics (arXiv:2607.13757)](https://arxiv.org/abs/2607.13757). Accepted for presentation at [Sim2Science: ML with Imperfect Scientific Models, NeurIPS 2026](https://neurips.cc/virtual/2026/loc/paris/workshop/137629).
+Paper: [Girsanov Reweighting for Uncertainty Propagation in Rare-Event Kinetics (arXiv:2607.13757)](https://arxiv.org/abs/2607.13757). Accepted for presentation at [Sim2Science: ML with Imperfect Scientific Models, NeurIPS 2026](https://neurips.cc/virtual/2026/loc/paris/166533).
 
 The reusable Python package is `girsanov_uq` (`src/girsanov_uq`). The remainder of the repository contains the experimental pipelines (1D, Müller–Brown, dimers, and butane), notebooks, and post-processing scripts.
 

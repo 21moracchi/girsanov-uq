@@ -361,7 +361,7 @@ def plot_temperature_axes(axes, models=MODELS):
             ax.set_yscale("log")
             ax.set_ylim(2e-5, 3e-2)
             ax.grid(True, which="both", alpha=0.25)
-            ax.legend(fontsize=13)
+            ax.legend(loc="lower right", fontsize=13)
             print(
                 f"Global envelope violation, {labels[model]} / {uq_title}: "
                 f"{envelope_violation:.1%}"
@@ -478,7 +478,7 @@ def plot_rate_temperature_axes(axes):
             ax.set_xticks(TEMPERATURES)
             ax.set_yscale("log")
             ax.grid(True, which="both", alpha=0.25)
-            ax.legend(fontsize=13)
+            ax.legend(loc="lower right", fontsize=13)
 
     for ax in axes[-1, :]:
         ax.set_xlabel("Temperature [K]", fontsize=18)
